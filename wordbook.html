@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#101822" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="단어장" />
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABnElEQVR42u3dsQ2AIBBAUYZwACdwASZmNBtjwQB0RqKETiW+5A/A3b2eMM2LdFuwAsEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEhwSH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BITgEh+AQHIJDgkNwCA7BITgEh+AQHIJDcEhwCA7BITgEh+AQHILj0rrlQfvORHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQccdXuKR+PiOE/x7kStl7SCAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw44/oRDzweH4BAcgkNwuBAccMABBxxwwAEHHHDAAYfgEByCQ3AIDjjggAMOOOCAAw444IBDcAgOwSE4BAcccMABBxxwwAGH78oFh+AQHIJDcAgOwSE4BIcEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3DYguAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDnQogHbnfOQALCgAAAABJRU5ErkJggg==" />
+<title>나만의 단어장</title>
+<style>
+  :root {
+    --bg: #101822;
+    --surface: #17212E;
+    --surface-2: #1E2A39;
+    --line: #263449;
+    --line-2: #33445D;
+    --text: #E8EEF6;
+    --text-2: #9DAABC;
+    --text-3: #6B7A8F;
+    --amber: #F0A93B;
+    --amber-ink: #101822;
+    --amber-soft: rgba(240, 169, 59, 0.14);
+    --good: #4FBE8F;
+    --good-soft: rgba(79, 190, 143, 0.15);
+    --bad: #E8735F;
+    --bad-soft: rgba(232, 115, 95, 0.15);
+
+    --kr: "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", -apple-system,
+      BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --en: "Iowan Old Style", Charter, Georgia, "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+
+    --r: 14px;
+    --pad: 18px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #EEF1F5;
+      --surface: #FFFFFF;
+      --surface-2: #F6F8FA;
+      --line: #DEE4EC;
+      --line-2: #C3CDDA;
+      --text: #131E2B;
+      --text-2: #55647A;
+      --text-3: #8593A7;
+      --amber: #B87613;
+      --amber-ink: #FFFFFF;
+      --amber-soft: rgba(184, 118, 19, 0.11);
+      --good: #22815A;
+      --good-soft: rgba(34, 129, 90, 0.12);
+      --bad: #BE472F;
+      --bad-soft: rgba(190, 71, 47, 0.11);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg: #EEF1F5;
+    --surface: #FFFFFF;
+    --surface-2: #F6F8FA;
+    --line: #DEE4EC;
+    --line-2: #C3CDDA;
+    --text: #131E2B;
+    --text-2: #55647A;
+    --text-3: #8593A7;
+    --amber: #B87613;
+    --amber-ink: #FFFFFF;
+    --amber-soft: rgba(184, 118, 19, 0.11);
+    --good: #22815A;
+    --good-soft: rgba(34, 129, 90, 0.12);
+    --bad: #BE472F;
+    --bad-soft: rgba(190, 71, 47, 0.11);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #101822;
+    --surface: #17212E;
+    --surface-2: #1E2A39;
+    --line: #263449;
+    --line-2: #33445D;
+    --text: #E8EEF6;
+    --text-2: #9DAABC;
+    --text-3: #6B7A8F;
+    --amber: #F0A93B;
+    --amber-ink: #101822;
+    --amber-soft: rgba(240, 169, 59, 0.14);
+    --good: #4FBE8F;
+    --good-soft: rgba(79, 190, 143, 0.15);
+    --bad: #E8735F;
+    --bad-soft: rgba(232, 115, 95, 0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--kr);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+    color: inherit;
+    font-family: inherit;
+  }
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ── shell ─────────────────────────────────────────── */
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  main {
+    flex: 1;
+    padding: calc(env(safe-area-inset-top) + 14px) var(--pad) 26px;
+  }
+
+  .screen { display: none; }
+  .screen.on { display: block; }
+
+  /* ── bottom nav ────────────────────────────────────── */
+
+  nav {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  nav button {
+    padding: 11px 4px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-3);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+
+  nav button .ico {
+    width: 22px;
+    height: 22px;
+    display: block;
+  }
+
+  nav button.on { color: var(--amber); }
+
+  /* ── type ──────────────────────────────────────────── */
+
+  h1 {
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 3px;
+  }
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+
+  .sub {
+    color: var(--text-2);
+    font-size: 14px;
+    margin: 0 0 20px;
+  }
+
+  /* 한글 라벨이라 자간을 넓히지 않는다 — 넓히면 낱글자가 흩어져 보인다 */
+  .eyebrow {
+    font-family: var(--kr);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text-3);
+  }
+
+  .postag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 7px;
+    margin-right: 7px;
+    vertical-align: 2px;
+    letter-spacing: 0;
+  }
+
+  .en {
+    font-family: var(--en);
+    letter-spacing: -0.01em;
+  }
+
+  /* ── cards & tiles ─────────────────────────────────── */
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 16px;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 13px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .tile .n {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  .tile .k {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .tile.due .n { color: var(--amber); }
+  .tile.done .n { color: var(--good); }
+
+  /* ── buttons ───────────────────────────────────────── */
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 18px;
+    border-radius: var(--r);
+    background: var(--amber);
+    color: var(--amber-ink);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .btn:disabled { opacity: 0.4; }
+
+  .btn.ghost {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .btn.quiet {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .btn.danger { background: var(--bad); color: #fff; }
+
+  .row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .row > * { flex: 1; }
+
+  /* ── progress ──────────────────────────────────────── */
+
+  .bar {
+    height: 6px;
+    border-radius: 99px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .bar > i {
+    display: block;
+    height: 100%;
+    background: var(--amber);
+    border-radius: 99px;
+    transition: width 0.25s ease;
+  }
+
+  /* ── word list ─────────────────────────────────────── */
+
+  .search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .chips::-webkit-scrollbar { display: none; }
+
+  .chip {
+    flex: none;
+    padding: 7px 13px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .chip.on {
+    background: var(--amber-soft);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  .item {
+    background: var(--surface);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .item .w { flex: 1; min-width: 0; }
+
+  .item .t {
+    font-family: var(--en);
+    font-size: 17px;
+    font-weight: 600;
+    display: block;
+  }
+
+  .item .m {
+    font-size: 13px;
+    color: var(--text-2);
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pip {
+    flex: none;
+    width: 34px;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  .pip.b5 { color: var(--good); }
+  .pip.b0 { color: var(--text-3); }
+
+  .empty {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 14px;
+    padding: 38px 20px;
+  }
+
+  /* ── study overlay ─────────────────────────────────── */
+
+  .study {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    padding: calc(env(safe-area-inset-top) + 12px) var(--pad)
+             calc(env(safe-area-inset-bottom) + 16px);
+  }
+
+  .study.on { display: flex; }
+
+  .study-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .study-top .bar { flex: 1; }
+
+  .x {
+    font-size: 22px;
+    line-height: 1;
+    color: var(--text-3);
+    padding: 6px;
+    margin: -6px;
+  }
+
+  .count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    padding: 18px 0;
+    min-height: 0;
+  }
+
+  .prompt { text-align: center; }
+
+  .prompt .term {
+    font-family: var(--en);
+    font-size: clamp(36px, 11vw, 52px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    word-break: break-word;
+  }
+
+  .prompt .kterm {
+    font-size: clamp(26px, 7.5vw, 34px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .prompt .pos {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 8px;
+  }
+
+  .reveal {
+    text-align: center;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+
+  .reveal .mean {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .reveal .ex {
+    font-family: var(--en);
+    font-size: 15px;
+    color: var(--text-2);
+    margin-top: 10px;
+  }
+
+  .reveal .exk {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+
+  .speak {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    margin-top: 12px;
+  }
+
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .choice {
+    width: 100%;
+    text-align: left;
+    padding: 15px 16px;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .choice .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    flex: none;
+    width: 14px;
+  }
+
+  .choice.right {
+    border-color: var(--good);
+    background: var(--good-soft);
+    color: var(--good);
+  }
+
+  .choice.wrong {
+    border-color: var(--bad);
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+
+  .spell {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r);
+    padding: 15px 16px;
+    font-family: var(--en);
+    font-size: 21px;
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+
+  .spell.right { border-color: var(--good); color: var(--good); }
+  .spell.wrong { border-color: var(--bad); color: var(--bad); }
+
+  .verdict {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    min-height: 22px;
+  }
+
+  .verdict.right { color: var(--good); }
+  .verdict.wrong { color: var(--bad); }
+
+  /* ── forms ─────────────────────────────────────────── */
+
+  label.f {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin: 14px 0 6px;
+  }
+
+  .in, textarea.in {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  textarea.in {
+    min-height: 170px;
+    resize: vertical;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 6px;
+    line-height: 1.55;
+  }
+
+  .setrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .setrow:last-child { border-bottom: none; }
+
+  .setrow .lab { font-size: 15px; font-weight: 600; }
+  .setrow .dsc { font-size: 12px; color: var(--text-3); }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: none;
+  }
+
+  .stepper button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 18px;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+  }
+
+  .stepper button:first-child { border-radius: 9px 0 0 9px; }
+  .stepper button:last-child { border-radius: 0 9px 9px 0; }
+
+  .stepper .v {
+    min-width: 46px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── sheet ─────────────────────────────────────────── */
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(0, 0, 0, 0.55);
+    display: none;
+    align-items: flex-end;
+  }
+
+  .sheet.on { display: flex; }
+
+  .sheet-in {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 18px 18px 0 0;
+    border-top: 1px solid var(--line);
+    padding: 8px var(--pad) calc(env(safe-area-inset-bottom) + 18px);
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+
+  .grab {
+    width: 38px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--line-2);
+    margin: 6px auto 12px;
+  }
+
+  .sheet h2 { font-size: 18px; margin-bottom: 4px; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + 78px);
+    transform: translateX(-50%);
+    z-index: 80;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 18px;
+    border-radius: 99px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+
+  .toast.on { opacity: 1; }
+
+  .warn {
+    background: var(--bad-soft);
+    border: 1px solid var(--bad);
+    color: var(--bad);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <main>
+
+    <!-- ── 오늘 ─────────────────────────────────────── -->
+    <section class="screen on" id="s-today">
+      <h1>오늘의 단어</h1>
+      <p class="sub" id="today-sub">불러오는 중…</p>
+      <div id="storage-warn"></div>
+
+      <div class="tiles">
+        <div class="tile due"><span class="n" id="t-due">0</span><span class="k">복습할 단어</span></div>
+        <div class="tile"><span class="n" id="t-new">0</span><span class="k">새 단어</span></div>
+        <div class="tile done"><span class="n" id="t-mastered">0</span><span class="k">외운 단어</span></div>
+      </div>
+
+      <button class="btn" id="go-study">학습 시작</button>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">
+          <h2 style="margin:0">전체 진행</h2>
+          <span class="count" id="prog-label">0 / 0</span>
+        </div>
+        <div class="bar"><i id="prog-bar" style="width:0%"></i></div>
+        <p class="hint" id="streak-line" style="margin-top:11px"></p>
+      </div>
+    </section>
+
+    <!-- ── 단어 ─────────────────────────────────────── -->
+    <section class="screen" id="s-words">
+      <h1>단어</h1>
+      <p class="sub" id="words-sub"></p>
+
+      <input class="search" id="q" type="search" placeholder="단어나 뜻으로 검색"
+             autocapitalize="none" autocorrect="off" spellcheck="false" />
+
+      <div class="chips" id="day-chips"></div>
+
+      <div class="row" style="margin:2px 0 14px">
+        <button class="btn quiet" id="open-add">단어 추가</button>
+        <button class="btn quiet" id="open-paste">목록 붙여넣기</button>
+      </div>
+
+      <div class="list" id="word-list"></div>
+    </section>
+
+    <!-- ── 시험 ─────────────────────────────────────── -->
+    <section class="screen" id="s-exam">
+      <h1>시험 모드</h1>
+      <p class="sub">범위를 골라 다 맞힐 때까지 반복합니다. 간격 반복 일정은 건드리지 않아요.</p>
+
+      <h2>범위</h2>
+      <div class="chips" id="exam-chips" style="flex-wrap:wrap;overflow:visible"></div>
+
+      <h2 style="margin-top:16px">방식</h2>
+      <div class="chips" id="exam-type" style="overflow:visible">
+        <button class="chip on" data-type="choice">뜻 고르기</button>
+        <button class="chip" data-type="spell">스펠링 쓰기</button>
+        <button class="chip" data-type="flash">카드 넘기기</button>
+      </div>
+
+      <p class="hint" id="exam-count" style="margin:14px 0 12px"></p>
+      <button class="btn" id="go-exam">시험 시작</button>
+    </section>
+
+    <!-- ── 설정 ─────────────────────────────────────── -->
+    <section class="screen" id="s-set">
+      <h1>설정</h1>
+      <p class="sub">데이터는 이 브라우저에만 저장됩니다. 가끔 백업해 두세요.</p>
+
+      <div class="card">
+        <div class="setrow">
+          <div>
+            <div class="lab">하루 새 단어</div>
+            <div class="dsc">하루에 새로 시작할 단어 수</div>
+          </div>
+          <div class="stepper">
+            <button id="new-minus" aria-label="줄이기">−</button>
+            <span class="v" id="new-val">20</span>
+            <button id="new-plus" aria-label="늘리기">+</button>
+          </div>
+        </div>
+        <div class="setrow">
+          <div>
+            <div class="lab">화면 테마</div>
+            <div class="dsc">기기 설정을 따르거나 직접 고르기</div>
+          </div>
+          <div class="chips" style="overflow:visible" id="theme-pick">
+            <button class="chip" data-theme="auto">자동</button>
+            <button class="chip" data-theme="light">밝게</button>
+            <button class="chip" data-theme="dark">어둡게</button>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:22px">단어장</h2>
+      <div class="card">
+        <div class="setrow">
+          <div>
+            <div class="lab">고등 필수 영단어 300</div>
+            <div class="dsc" id="builtin-state">DAY 01–15</div>
+          </div>
+          <button class="btn quiet" id="load-builtin" style="flex:none;width:auto;padding:0 16px">불러오기</button>
+        </div>
+      </div>
+
+      <h2 style="margin-top:22px">백업</h2>
+      <div class="row">
+        <button class="btn ghost" id="do-export">파일로 내보내기</button>
+        <button class="btn ghost" id="do-import">파일에서 복원</button>
+      </div>
+      <p class="hint">
+        브라우저 저장 공간은 기기를 바꾸거나 데이터를 지우면 함께 사라집니다.
+        내보낸 파일을 메일이나 클라우드에 보관해 두면 안전합니다.
+      </p>
+      <input type="file" id="file-in" accept="application/json,.json" hidden />
+
+      <h2 style="margin-top:22px">위험</h2>
+      <button class="btn quiet" id="do-reset" style="border-color:var(--bad);color:var(--bad)">
+        모든 데이터 지우기
+      </button>
+    </section>
+
+  </main>
+
+  <nav>
+    <button class="on" data-go="today">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="7" width="14" height="13" rx="2.5" />
+        <path d="M7.5 4h11A2.5 2.5 0 0 1 21 6.5v10" />
+      </svg>
+      오늘
+    </button>
+    <button data-go="words">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h10" />
+      </svg>
+      단어
+    </button>
+    <button data-go="exam">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 3h9l4 4v14H6z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+      시험
+    </button>
+    <button data-go="set">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.2" />
+        <path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6M18.4 18.4l-1.6-1.6M7.2 7.2L5.6 5.6" />
+      </svg>
+      설정
+    </button>
+  </nav>
+</div>
+
+<!-- ── 학습/시험 화면 ─────────────────────────────────── -->
+<div class="study" id="study">
+  <div class="study-top">
+    <button class="x" id="study-close" aria-label="닫기">✕</button>
+    <div class="bar"><i id="study-bar" style="width:0%"></i></div>
+    <span class="count" id="study-count">0/0</span>
+  </div>
+
+  <div class="stage">
+    <div class="prompt" id="prompt"></div>
+    <div id="answer"></div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div id="study-foot"></div>
+</div>
+
+<!-- ── 시트 ───────────────────────────────────────────── -->
+<div class="sheet" id="sheet">
+  <div class="sheet-in">
+    <div class="grab"></div>
+    <div id="sheet-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ════ 내장 단어장 ══════════════════════════════════════ */
+/* [영단어, 품사, 뜻, 예문, 예문 뜻] */
+const BUILTIN = [{"name":"DAY 01","words":[["abandon","v","버리다, 포기하다","She abandoned her plan.","그녀는 계획을 포기했다."],["ability","n","능력","He has the ability to lead.","그는 이끄는 능력이 있다."],["accept","v","받아들이다","Please accept my apology.","제 사과를 받아 주세요."],["achieve","v","이루다, 달성하다","She achieved her goal.","그녀는 목표를 이뤘다."],["affect","v","~에 영향을 미치다","Weather affects our mood.","날씨는 기분에 영향을 미친다."],["allow","v","허락하다","My parents allow me to go out.","부모님은 내가 나가는 것을 허락하신다."],["amount","n","양, 액수","A large amount of water was used.","많은 양의 물이 쓰였다."],["ancient","a","고대의","Ancient Rome was powerful.","고대 로마는 강력했다."],["appear","v","나타나다; ~처럼 보이다","A star appeared in the sky.","별 하나가 하늘에 나타났다."],["avoid","v","피하다","Try to avoid eating late.","늦게 먹는 것을 피하려고 해라."],["benefit","n","이익, 혜택","Exercise has many benefits.","운동에는 많은 이점이 있다."],["cause","v","일으키다, ~의 원인이 되다","Smoking causes disease.","흡연은 질병을 일으킨다."],["certain","a","확실한; 어떤","I am certain he will come.","나는 그가 올 것이라 확신한다."],["common","a","흔한, 공통의","This is a common mistake.","이것은 흔한 실수다."],["compare","v","비교하다","Compare the two answers.","두 답을 비교해 보라."],["consider","v","고려하다, ~로 여기다","Consider the risks first.","먼저 위험을 고려해라."],["continue","v","계속하다","The rain continued all day.","비가 하루 종일 계속되었다."],["create","v","만들다, 창조하다","He created a new game.","그는 새로운 게임을 만들었다."],["decide","v","결정하다","We decided to leave early.","우리는 일찍 떠나기로 했다."],["describe","v","묘사하다, 설명하다","Describe what you saw.","본 것을 설명해 보라."]]},{"name":"DAY 02","words":[["develop","v","발전시키다, 개발하다","They developed a new app.","그들은 새 앱을 개발했다."],["discover","v","발견하다","Scientists discovered a new star.","과학자들이 새 별을 발견했다."],["effect","n","효과, 영향","The medicine had no effect.","그 약은 효과가 없었다."],["effort","n","노력","Success takes effort.","성공에는 노력이 든다."],["encourage","v","격려하다, 장려하다","She encouraged me to try.","그녀는 내게 해 보라고 격려했다."],["environment","n","환경","We must protect the environment.","우리는 환경을 보호해야 한다."],["especially","ad","특히","I like fruit, especially peaches.","나는 과일, 특히 복숭아를 좋아한다."],["establish","v","설립하다, 확립하다","The school was established in 1950.","그 학교는 1950년에 설립되었다."],["eventually","ad","결국","He eventually agreed.","그는 결국 동의했다."],["evidence","n","증거","There is no evidence for that.","그것에 대한 증거가 없다."],["examine","v","조사하다, 살펴보다","The doctor examined my eyes.","의사가 내 눈을 살펴보았다."],["expect","v","기대하다, 예상하다","I expect good news.","나는 좋은 소식을 기대한다."],["experience","n","경험","She has teaching experience.","그녀는 가르친 경험이 있다."],["explain","v","설명하다","Can you explain the rule?","그 규칙을 설명해 줄래?"],["express","v","표현하다","He expressed his thanks.","그는 감사를 표현했다."],["familiar","a","익숙한, 친숙한","That song sounds familiar.","그 노래는 익숙하게 들린다."],["focus","v","집중하다","Focus on the question.","그 문제에 집중해라."],["force","v","강요하다","Do not force him to eat.","그에게 먹으라고 강요하지 마라."],["former","a","이전의, 전자의","He is a former teacher.","그는 전직 교사다."],["gather","v","모으다, 모이다","Students gathered in the hall.","학생들이 강당에 모였다."]]},{"name":"DAY 03","words":[["generation","n","세대","Each generation has its music.","세대마다 자기 음악이 있다."],["gradually","ad","점차","The sky gradually darkened.","하늘이 점차 어두워졌다."],["huge","a","거대한","A huge crowd filled the street.","거대한 인파가 거리를 메웠다."],["identify","v","확인하다, 알아보다","Can you identify the bird?","저 새를 알아볼 수 있니?"],["ignore","v","무시하다","He ignored my advice.","그는 내 조언을 무시했다."],["imagine","v","상상하다","Imagine a world without war.","전쟁 없는 세상을 상상해 보라."],["immediately","ad","즉시","Call me immediately.","즉시 나에게 전화해라."],["impact","n","충격, 영향","The news had a huge impact.","그 소식은 큰 영향을 미쳤다."],["improve","v","개선하다, 나아지다","My English is improving.","내 영어가 나아지고 있다."],["include","v","포함하다","The price includes tax.","그 가격은 세금을 포함한다."],["increase","v","증가하다, 늘리다","Prices increased last year.","작년에 물가가 올랐다."],["independent","a","독립적인","She is financially independent.","그녀는 경제적으로 독립했다."],["indicate","v","나타내다, 가리키다","The sign indicates the exit.","그 표지는 출구를 가리킨다."],["individual","n","개인","Each individual is different.","각 개인은 서로 다르다."],["industry","n","산업","The film industry is growing.","영화 산업이 성장하고 있다."],["influence","n","영향, 영향력","Friends have a strong influence.","친구는 큰 영향을 미친다."],["instead","ad","대신에","Let us walk instead.","대신 걷자."],["intend","v","의도하다, ~할 작정이다","I intend to study abroad.","나는 유학할 작정이다."],["involve","v","포함하다, 관련시키다","The job involves travel.","그 일은 출장을 포함한다."],["issue","n","문제, 쟁점","Climate is a global issue.","기후는 세계적인 문제다."]]},{"name":"DAY 04","words":[["judge","v","판단하다","Do not judge by appearance.","겉모습으로 판단하지 마라."],["knowledge","n","지식","Knowledge grows by sharing.","지식은 나눌수록 자란다."],["lack","n","부족","A lack of sleep hurts memory.","수면 부족은 기억력을 해친다."],["limit","v","제한하다","Limit your screen time.","화면 보는 시간을 제한해라."],["maintain","v","유지하다; 주장하다","He maintained his position.","그는 자기 입장을 유지했다."],["major","a","주요한","That is a major problem.","그것은 주요한 문제다."],["manage","v","관리하다; 해내다","She managed to finish on time.","그녀는 제때 끝내는 데 성공했다."],["material","n","재료, 자료","We need study materials.","우리는 학습 자료가 필요하다."],["measure","v","측정하다","Measure the length twice.","길이를 두 번 재라."],["mention","v","언급하다","She mentioned your name.","그녀가 네 이름을 언급했다."],["method","n","방법","This method works well.","이 방법은 잘 통한다."],["modern","a","현대의","Modern life is busy.","현대의 삶은 바쁘다."],["narrow","a","좁은","The road is very narrow.","그 길은 매우 좁다."],["necessary","a","필요한","Sleep is necessary for health.","잠은 건강에 필요하다."],["negative","a","부정적인","He gave a negative answer.","그는 부정적인 대답을 했다."],["normal","a","정상적인, 보통의","His temperature is normal.","그의 체온은 정상이다."],["notice","v","알아채다","I noticed a small mistake.","나는 작은 실수를 알아챘다."],["obvious","a","명백한","The answer is obvious.","답은 명백하다."],["occur","v","일어나다, 발생하다","The accident occurred at night.","그 사고는 밤에 일어났다."],["offer","v","제안하다, 제공하다","They offered me a job.","그들은 내게 일자리를 제안했다."]]},{"name":"DAY 05","words":[["opportunity","n","기회","This is a great opportunity.","이것은 좋은 기회다."],["oppose","v","반대하다","Many people opposed the plan.","많은 사람이 그 계획에 반대했다."],["ordinary","a","평범한","It was an ordinary day.","평범한 하루였다."],["organize","v","조직하다, 정리하다","She organized the event.","그녀가 그 행사를 준비했다."],["origin","n","기원, 출신","The origin of the word is Latin.","그 단어의 기원은 라틴어다."],["particular","a","특정한, 특별한","Is there a particular reason?","특별한 이유가 있니?"],["perform","v","수행하다, 공연하다","The band performed last night.","그 밴드가 어젯밤 공연했다."],["persuade","v","설득하다","He persuaded me to join.","그는 내가 합류하도록 설득했다."],["physical","a","신체의, 물리적인","Physical activity helps sleep.","신체 활동은 수면에 도움이 된다."],["policy","n","정책","The school changed its policy.","학교가 정책을 바꿨다."],["positive","a","긍정적인","Keep a positive attitude.","긍정적인 태도를 유지해라."],["potential","n","잠재력","She has great potential.","그녀는 큰 잠재력이 있다."],["practical","a","실용적인","Give me practical advice.","실용적인 조언을 해 줘."],["predict","v","예측하다","No one can predict the future.","아무도 미래를 예측할 수 없다."],["prefer","v","선호하다","I prefer tea to coffee.","나는 커피보다 차를 선호한다."],["prevent","v","막다, 예방하다","Masks help prevent illness.","마스크는 병을 예방하는 데 도움이 된다."],["previous","a","이전의","See the previous page.","이전 쪽을 보라."],["principle","n","원리, 원칙","He never breaks his principles.","그는 원칙을 절대 어기지 않는다."],["process","n","과정","Learning is a slow process.","배움은 느린 과정이다."],["progress","n","진전, 발전","You are making good progress.","너는 잘 나아가고 있다."]]},{"name":"DAY 06","words":[["proper","a","적절한","Wear proper shoes.","적절한 신발을 신어라."],["propose","v","제안하다","She proposed a new idea.","그녀는 새 아이디어를 제안했다."],["protect","v","보호하다","Sunglasses protect your eyes.","선글라스는 눈을 보호한다."],["prove","v","증명하다","Can you prove it?","그것을 증명할 수 있니?"],["provide","v","제공하다","The school provides lunch.","학교가 점심을 제공한다."],["purpose","n","목적","What is the purpose of this?","이것의 목적은 무엇이니?"],["quality","n","질, 품질","The quality is excellent.","품질이 훌륭하다."],["rare","a","드문, 희귀한","Snow is rare here.","여기서 눈은 드물다."],["realize","v","깨닫다","I realized my mistake.","나는 내 실수를 깨달았다."],["reason","n","이유","Give me one good reason.","타당한 이유 하나만 대 봐."],["recall","v","기억해 내다","I cannot recall his name.","그의 이름이 기억나지 않는다."],["recent","a","최근의","A recent study says so.","최근 연구가 그렇게 말한다."],["recognize","v","알아보다, 인정하다","I did not recognize you.","너를 못 알아봤어."],["recommend","v","추천하다","I recommend this book.","나는 이 책을 추천한다."],["reduce","v","줄이다","We must reduce waste.","우리는 쓰레기를 줄여야 한다."],["reflect","v","반영하다; 반사하다","The result reflects your effort.","결과는 네 노력을 반영한다."],["refuse","v","거절하다","He refused to answer.","그는 대답하기를 거절했다."],["regard","v","~로 여기다","I regard him as a friend.","나는 그를 친구로 여긴다."],["region","n","지역","This region is very dry.","이 지역은 매우 건조하다."],["regret","v","후회하다","You will regret it later.","너는 나중에 후회할 것이다."]]},{"name":"DAY 07","words":[["reject","v","거부하다","They rejected our offer.","그들은 우리 제안을 거부했다."],["relate","v","관련시키다","How does this relate to us?","이것이 우리와 무슨 관련이 있니?"],["release","v","공개하다, 풀어 주다","The film was released today.","그 영화가 오늘 공개되었다."],["rely","v","의지하다","You can rely on me.","너는 나를 믿어도 된다."],["remain","v","남다, 여전히 ~이다","Few seats remain.","좌석이 얼마 남지 않았다."],["remove","v","제거하다","Remove your shoes here.","여기서 신발을 벗으세요."],["replace","v","대체하다","Machines replaced workers.","기계가 노동자를 대체했다."],["represent","v","대표하다, 나타내다","This line represents the road.","이 선은 도로를 나타낸다."],["require","v","요구하다, 필요로 하다","The job requires patience.","그 일은 인내를 요구한다."],["research","n","연구","Her research won a prize.","그녀의 연구가 상을 받았다."],["resource","n","자원","Water is a limited resource.","물은 한정된 자원이다."],["respect","v","존중하다","Respect other opinions.","다른 의견을 존중해라."],["respond","v","반응하다, 대답하다","He did not respond to my text.","그는 내 문자에 답하지 않았다."],["responsible","a","책임이 있는","You are responsible for this.","너는 이 일에 책임이 있다."],["result","n","결과","The result surprised everyone.","그 결과는 모두를 놀라게 했다."],["reveal","v","드러내다, 밝히다","He revealed the truth.","그는 진실을 밝혔다."],["reward","n","보상","Hard work brings rewards.","노력은 보상을 가져온다."],["satisfy","v","만족시키다","The answer satisfied me.","그 답은 나를 만족시켰다."],["search","v","찾다, 수색하다","They searched for the key.","그들은 열쇠를 찾았다."],["seek","v","찾다, 추구하다","She is seeking advice.","그녀는 조언을 구하고 있다."]]},{"name":"DAY 08","words":[["select","v","선택하다","Select one answer.","답 하나를 고르시오."],["separate","v","분리하다","Separate the trash.","쓰레기를 분리해라."],["serious","a","심각한; 진지한","This is a serious problem.","이것은 심각한 문제다."],["settle","v","정착하다; 해결하다","They settled in Busan.","그들은 부산에 정착했다."],["severe","a","심한, 혹독한","The winter was severe.","겨울이 혹독했다."],["share","v","공유하다, 나누다","Share your notes with me.","네 필기를 나눠 줘."],["significant","a","중요한, 상당한","There was a significant change.","상당한 변화가 있었다."],["similar","a","비슷한","Our answers are similar.","우리 답이 비슷하다."],["situation","n","상황","The situation got worse.","상황이 더 나빠졌다."],["society","n","사회","Society is changing fast.","사회가 빠르게 변하고 있다."],["solve","v","해결하다","Can you solve this problem?","이 문제를 풀 수 있니?"],["source","n","출처, 원천","Check the source of the news.","그 뉴스의 출처를 확인해라."],["specific","a","구체적인, 특정한","Be more specific, please.","좀 더 구체적으로 말해 주세요."],["spread","v","퍼지다, 펼치다","The fire spread quickly.","불이 빠르게 번졌다."],["standard","n","기준, 표준","The standard is very high.","기준이 매우 높다."],["strategy","n","전략","We need a new strategy.","우리는 새 전략이 필요하다."],["strict","a","엄격한","My teacher is strict.","우리 선생님은 엄격하시다."],["structure","n","구조","The structure is simple.","그 구조는 단순하다."],["struggle","v","애쓰다, 분투하다","He struggled to stay awake.","그는 깨어 있으려 애썼다."],["subject","n","주제; 과목","Math is my favorite subject.","수학은 내가 제일 좋아하는 과목이다."]]},{"name":"DAY 09","words":[["succeed","v","성공하다","She succeeded at last.","그녀는 마침내 성공했다."],["suggest","v","제안하다; 시사하다","I suggest leaving now.","나는 지금 떠날 것을 제안한다."],["supply","v","공급하다","They supply water to the town.","그들은 마을에 물을 공급한다."],["support","v","지지하다, 지원하다","My family supports my dream.","가족이 내 꿈을 지지한다."],["suppose","v","추측하다, 가정하다","I suppose you are right.","네 말이 맞는 것 같다."],["surface","n","표면","The surface is smooth.","표면이 매끄럽다."],["surround","v","둘러싸다","Trees surround the house.","나무들이 그 집을 둘러싸고 있다."],["survive","v","살아남다","Only two plants survived.","식물 두 그루만 살아남았다."],["suspect","v","의심하다","Police suspect the driver.","경찰은 그 운전자를 의심한다."],["symbol","n","상징","A dove is a symbol of peace.","비둘기는 평화의 상징이다."],["task","n","과제, 일","Finish this task first.","이 일을 먼저 끝내라."],["technique","n","기술, 기법","He learned a new technique.","그는 새로운 기법을 배웠다."],["tend","v","~하는 경향이 있다","People tend to forget names.","사람들은 이름을 잊는 경향이 있다."],["term","n","용어; 기간","Explain the term simply.","그 용어를 쉽게 설명해라."],["theory","n","이론","The theory is hard to prove.","그 이론은 증명하기 어렵다."],["threat","n","위협","Pollution is a real threat.","오염은 실제 위협이다."],["tradition","n","전통","This is a family tradition.","이것은 집안의 전통이다."],["transfer","v","옮기다, 이동하다","He transferred to our school.","그는 우리 학교로 전학 왔다."],["treat","v","대하다; 치료하다","Treat others kindly.","다른 사람을 친절하게 대해라."],["trend","n","경향, 유행","The trend is changing.","그 흐름이 바뀌고 있다."]]},{"name":"DAY 10","words":[["trust","v","신뢰하다","I trust her completely.","나는 그녀를 완전히 믿는다."],["typical","a","전형적인","That is a typical answer.","그건 전형적인 대답이다."],["unique","a","독특한, 유일한","Every voice is unique.","모든 목소리는 저마다 다르다."],["universal","a","보편적인","Music is a universal language.","음악은 보편적인 언어다."],["urban","a","도시의","Urban life is noisy.","도시 생활은 시끄럽다."],["urge","v","촉구하다","Doctors urge us to exercise.","의사들은 운동하라고 촉구한다."],["valuable","a","귀중한","Time is valuable.","시간은 귀중하다."],["variety","n","다양성, 종류","There is a variety of food.","다양한 음식이 있다."],["accompany","v","동반하다","Thunder accompanied the rain.","천둥이 비를 동반했다."],["accumulate","v","축적하다, 쌓이다","Dust accumulated on the shelf.","선반에 먼지가 쌓였다."],["adequate","a","충분한, 적절한","The room is adequate for two.","그 방은 두 명에게 충분하다."],["adopt","v","채택하다; 입양하다","They adopted a new rule.","그들은 새 규칙을 채택했다."],["alter","v","바꾸다","Do not alter the original.","원본을 바꾸지 마라."],["anticipate","v","예상하다","We anticipate a busy week.","우리는 바쁜 한 주를 예상한다."],["apparent","a","명백한; ~인 듯한","It became apparent to everyone.","그것은 모두에게 명백해졌다."],["appropriate","a","적절한","Wear appropriate clothes.","적절한 옷을 입어라."],["assess","v","평가하다","Teachers assess our progress.","선생님들이 우리 진도를 평가한다."],["assume","v","가정하다; 떠맡다","Do not assume he knows.","그가 안다고 가정하지 마라."],["attain","v","이루다, 도달하다","She attained her goal.","그녀는 목표에 도달했다."],["bias","n","편견","We all have some bias.","우리 모두 어느 정도 편견이 있다."]]},{"name":"DAY 11","words":[["capable","a","~할 수 있는, 유능한","He is capable of more.","그는 더 해낼 수 있다."],["cease","v","그치다, 중단하다","The noise finally ceased.","소음이 마침내 그쳤다."],["cite","v","인용하다","She cited three studies.","그녀는 연구 세 편을 인용했다."],["compensate","v","보상하다","Nothing can compensate for lost time.","잃은 시간은 무엇으로도 보상할 수 없다."],["comprehend","v","이해하다","I cannot comprehend his choice.","나는 그의 선택을 이해할 수 없다."],["conceal","v","숨기다","He concealed his fear.","그는 두려움을 숨겼다."],["confront","v","맞서다, 직면하다","We must confront the truth.","우리는 진실에 맞서야 한다."],["consequence","n","결과","Every choice has consequences.","모든 선택에는 결과가 따른다."],["considerable","a","상당한","It took considerable time.","상당한 시간이 걸렸다."],["consistent","a","일관된","Be consistent in your study.","공부에 일관성을 지켜라."],["constitute","v","구성하다","Women constitute half the class.","여학생이 학급의 절반을 구성한다."],["contemporary","a","동시대의, 현대의","She likes contemporary art.","그녀는 현대 미술을 좋아한다."],["contradict","v","모순되다, 반박하다","His words contradict his actions.","그의 말은 행동과 모순된다."],["controversy","n","논란","The plan caused controversy.","그 계획은 논란을 일으켰다."],["crucial","a","결정적인, 중대한","Sleep is crucial before exams.","시험 전 수면은 매우 중요하다."],["deliberate","a","고의적인; 신중한","It was a deliberate choice.","그것은 의도적인 선택이었다."],["demonstrate","v","보여 주다, 입증하다","He demonstrated the method.","그는 그 방법을 시연했다."],["deprive","v","빼앗다","Noise deprived me of sleep.","소음이 내게서 잠을 빼앗았다."],["derive","v","유래하다, 끌어내다","The word derives from Greek.","그 단어는 그리스어에서 유래한다."],["diminish","v","줄어들다, 감소하다","His interest diminished.","그의 관심이 줄어들었다."]]},{"name":"DAY 12","words":[["distinguish","v","구별하다","Can you distinguish the twins?","그 쌍둥이를 구별할 수 있니?"],["diverse","a","다양한","Our class is diverse.","우리 반은 다양하다."],["dominate","v","지배하다","One team dominated the game.","한 팀이 경기를 지배했다."],["eliminate","v","제거하다","Eliminate the wrong answers.","틀린 답을 지워라."],["emerge","v","나타나다, 드러나다","New problems emerged.","새로운 문제들이 드러났다."],["emphasize","v","강조하다","He emphasized the deadline.","그는 마감일을 강조했다."],["enhance","v","향상시키다","Music enhances concentration.","음악은 집중력을 높여 준다."],["equivalent","a","동등한","One mile is equivalent to 1.6 km.","1마일은 1.6km와 같다."],["essential","a","필수적인","Water is essential to life.","물은 생명에 필수적이다."],["evaluate","v","평가하다","Evaluate your own writing.","네 글을 스스로 평가해 보라."],["exaggerate","v","과장하다","He always exaggerates.","그는 항상 과장한다."],["exceed","v","초과하다","Do not exceed the limit.","한도를 초과하지 마라."],["exclude","v","제외하다","No one was excluded.","아무도 제외되지 않았다."],["explicit","a","명시적인, 분명한","Give explicit instructions.","분명한 지시를 내려라."],["facilitate","v","촉진하다, 쉽게 하다","Charts facilitate understanding.","도표는 이해를 쉽게 해 준다."],["fundamental","a","근본적인","This is a fundamental rule.","이것은 근본적인 규칙이다."],["genuine","a","진짜의, 진심의","Her smile was genuine.","그녀의 미소는 진심이었다."],["hypothesis","n","가설","The hypothesis proved wrong.","그 가설은 틀린 것으로 드러났다."],["implement","v","시행하다","The school implemented the plan.","학교가 그 계획을 시행했다."],["imply","v","암시하다","His tone implied doubt.","그의 어조는 의심을 암시했다."]]},{"name":"DAY 13","words":[["inevitable","a","불가피한","Change is inevitable.","변화는 불가피하다."],["inherent","a","내재된, 고유한","Risk is inherent in sports.","위험은 운동에 내재해 있다."],["initiate","v","시작하다","She initiated the project.","그녀가 그 프로젝트를 시작했다."],["integrate","v","통합하다","We integrated the two lists.","우리는 두 목록을 통합했다."],["interpret","v","해석하다, 통역하다","How do you interpret this poem?","이 시를 어떻게 해석하니?"],["intervene","v","개입하다","A teacher intervened at once.","선생님이 즉시 개입했다."],["justify","v","정당화하다","Nothing justifies cheating.","무엇도 부정행위를 정당화하지 못한다."],["legitimate","a","정당한, 합법적인","That is a legitimate question.","그것은 정당한 질문이다."],["manipulate","v","조종하다; 다루다","Ads manipulate our desires.","광고는 우리 욕망을 조종한다."],["modify","v","수정하다","Modify the plan slightly.","계획을 조금 수정해라."],["negotiate","v","협상하다","They negotiated a deal.","그들은 거래를 협상했다."],["obtain","v","얻다","He obtained permission.","그는 허가를 얻었다."],["overwhelm","v","압도하다","The work overwhelmed me.","그 일이 나를 압도했다."],["perceive","v","인식하다","We perceive colors differently.","우리는 색을 다르게 인식한다."],["persist","v","계속되다; 고집하다","The pain persisted for days.","통증이 며칠 동안 계속되었다."],["phenomenon","n","현상","Rain is a natural phenomenon.","비는 자연 현상이다."],["precise","a","정확한","Give me the precise time.","정확한 시각을 알려 줘."],["prohibit","v","금지하다","Smoking is prohibited here.","여기서 흡연은 금지되어 있다."],["pursue","v","추구하다","Pursue what you love.","네가 사랑하는 것을 좇아라."],["reinforce","v","강화하다","Practice reinforces memory.","연습은 기억을 강화한다."]]},{"name":"DAY 14","words":[["sophisticated","a","정교한; 세련된","It is a sophisticated machine.","그것은 정교한 기계다."],["abstract","a","추상적인","The idea is too abstract.","그 개념은 너무 추상적이다."],["acknowledge","v","인정하다","He acknowledged his error.","그는 자기 잘못을 인정했다."],["adjust","v","조정하다, 적응하다","Adjust the volume, please.","소리를 조절해 주세요."],["advocate","v","지지하다, 옹호하다","She advocates clean energy.","그녀는 청정 에너지를 옹호한다."],["allocate","v","할당하다","Allocate time for review.","복습할 시간을 배정해라."],["ambiguous","a","모호한","The rule is ambiguous.","그 규칙은 모호하다."],["analyze","v","분석하다","Analyze the data carefully.","자료를 주의 깊게 분석해라."],["approach","n","접근법","Try a different approach.","다른 접근법을 시도해 보라."],["arbitrary","a","임의의, 자의적인","The choice seemed arbitrary.","그 선택은 임의로 보였다."],["attribute","v","~의 탓으로 돌리다","He attributes success to luck.","그는 성공을 운 덕분으로 돌린다."],["coherent","a","일관된, 논리 정연한","Write a coherent paragraph.","논리 정연한 단락을 써라."],["compel","v","강요하다","Hunger compelled him to stop.","허기가 그를 멈추게 했다."],["component","n","구성 요소","Sleep is a key component.","수면은 핵심 요소다."],["comprehensive","a","종합적인, 포괄적인","We took a comprehensive test.","우리는 종합 시험을 봤다."],["conform","v","따르다, 순응하다","Teens often conform to friends.","십 대는 종종 친구를 따른다."],["constrain","v","제약하다","Time constrains our choices.","시간이 우리 선택을 제약한다."],["contradiction","n","모순","There is a contradiction here.","여기에 모순이 있다."],["convey","v","전달하다","Words convey feelings.","말은 감정을 전달한다."],["cope","v","대처하다","She copes with stress well.","그녀는 스트레스에 잘 대처한다."]]},{"name":"DAY 15","words":[["critical","a","비판적인; 중대한","Think in a critical way.","비판적으로 생각해라."],["cultivate","v","기르다, 경작하다","Cultivate good habits.","좋은 습관을 길러라."],["decline","v","감소하다; 거절하다","Sales declined sharply.","매출이 급격히 감소했다."],["dedicate","v","바치다, 헌신하다","He dedicated his life to teaching.","그는 평생을 가르치는 데 바쳤다."],["depict","v","묘사하다","The film depicts real events.","그 영화는 실제 사건을 묘사한다."],["distort","v","왜곡하다","Fear distorts judgment.","두려움은 판단을 왜곡한다."],["elaborate","a","정교한, 공들인","She gave an elaborate answer.","그녀는 공들인 답을 내놓았다."],["endure","v","견디다","He endured great pain.","그는 큰 고통을 견뎠다."],["exploit","v","이용하다, 착취하다","They exploited cheap labor.","그들은 값싼 노동력을 착취했다."],["fluctuate","v","변동하다","Prices fluctuate daily.","가격이 날마다 변동한다."],["foster","v","기르다, 촉진하다","Reading fosters imagination.","독서는 상상력을 길러 준다."],["hinder","v","방해하다","Rain hindered the search.","비가 수색을 방해했다."],["impose","v","부과하다, 강요하다","Do not impose your views.","네 견해를 강요하지 마라."],["incentive","n","유인, 동기","Money is not the only incentive.","돈만이 유일한 동기는 아니다."],["inherit","v","물려받다","She inherited her mother's eyes.","그녀는 어머니의 눈을 물려받았다."],["neutral","a","중립적인","Stay neutral in the argument.","그 논쟁에서 중립을 지켜라."],["optimistic","a","낙관적인","He stayed optimistic.","그는 낙관적인 태도를 유지했다."],["priority","n","우선순위","Health is my top priority.","건강이 내 최우선이다."],["reluctant","a","꺼리는, 마지못한","She was reluctant to speak.","그녀는 말하기를 꺼렸다."],["transparent","a","투명한; 명백한","The process must be transparent.","그 과정은 투명해야 한다."]]}];
+
+/* ════ 저장 ════════════════════════════════════════════ */
+
+const KEY = "wordbook.v1";
+let storageOK = true;
+
+const DEFAULTS = () => ({
+  words: [],
+  settings: { dailyNew: 20, theme: "auto" },
+  meta: { streak: 0, lastDay: null, builtinLoaded: false },
+});
+
+let DB = DEFAULTS();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      DB = Object.assign(DEFAULTS(), parsed);
+      DB.settings = Object.assign(DEFAULTS().settings, parsed.settings || {});
+      DB.meta = Object.assign(DEFAULTS().meta, parsed.meta || {});
+      DB.words = Array.isArray(parsed.words) ? parsed.words : [];
+    }
+  } catch (e) {
+    storageOK = false;
+  }
+}
+
+function save() {
+  if (!storageOK) return;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(DB));
+  } catch (e) {
+    storageOK = false;
+    renderStorageWarning();
+  }
+}
+
+/* localStorage가 아예 막힌 환경(사파리 비공개 모드 등)을 먼저 확인 */
+try {
+  localStorage.setItem("__t", "1");
+  localStorage.removeItem("__t");
+} catch (e) {
+  storageOK = false;
+}
+
+/* ════ 간격 반복 ════════════════════════════════════════ */
+
+const DAY_MS = 86400000;
+/* 상자별 다음 복습까지의 간격(일). 5번 상자까지 올라가면 '외운 단어' */
+const STEPS = [0, 1, 3, 7, 16, 35];
+const MASTER_BOX = 5;
+
+const now = () => Date.now();
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+function newWord(en, pos, ko, ex, exKo, day) {
+  return {
+    id: "w" + Math.random().toString(36).slice(2, 10) + now().toString(36),
+    en: en.trim(),
+    pos: (pos || "").trim(),
+    ko: ko.trim(),
+    ex: (ex || "").trim(),
+    exKo: (exKo || "").trim(),
+    day: day || "내가 추가",
+    box: 0,
+    due: 0,
+    seen: 0,
+    right: 0,
+    wrong: 0,
+    added: now(),
+  };
+}
+
+function grade(w, ok) {
+  w.seen++;
+  if (ok) {
+    w.right++;
+    w.box = Math.min(MASTER_BOX, w.box + 1);
+  } else {
+    w.wrong++;
+    w.box = Math.max(0, w.box - 2);
+  }
+  w.due = now() + STEPS[w.box] * DAY_MS;
+}
+
+const isNew = (w) => w.seen === 0;
+const isDue = (w) => w.seen > 0 && w.due <= now();
+const isMastered = (w) => w.box >= MASTER_BOX;
+
+function dueWords() { return DB.words.filter(isDue); }
+function newWords() { return DB.words.filter(isNew); }
+
+function buildStudySession() {
+  const due = shuffle(dueWords());
+  const fresh = newWords().slice(0, DB.settings.dailyNew);
+  return shuffle(due.concat(fresh));
+}
+
+/* ════ 도구 ════════════════════════════════════════════ */
+
+function shuffle(a) {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), 1900);
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    speechSynthesis.speak(u);
+  } catch (e) { /* 음성 엔진이 없으면 조용히 넘어감 */ }
+}
+
+/* ════ 화면 전환 ════════════════════════════════════════ */
+
+function go(name) {
+  $$(".screen").forEach((s) => s.classList.toggle("on", s.id === "s-" + name));
+  $$("nav button").forEach((b) => b.classList.toggle("on", b.dataset.go === name));
+  window.scrollTo(0, 0);
+  if (name === "today") renderToday();
+  if (name === "words") renderWords();
+  if (name === "exam") renderExam();
+  if (name === "set") renderSettings();
+}
+
+$$("nav button").forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
+
+/* ════ 오늘 ════════════════════════════════════════════ */
+
+function renderStorageWarning() {
+  $("#storage-warn").innerHTML = storageOK
+    ? ""
+    : '<div class="warn">이 브라우저에서는 저장이 막혀 있어 학습 기록이 남지 않습니다. ' +
+      '사파리 비공개 탭이라면 일반 탭에서 열어 주세요.</div>';
+}
+
+function renderToday() {
+  renderStorageWarning();
+  const total = DB.words.length;
+  const due = dueWords().length;
+  const fresh = Math.min(newWords().length, DB.settings.dailyNew);
+  const mastered = DB.words.filter(isMastered).length;
+
+  $("#t-due").textContent = due;
+  $("#t-new").textContent = fresh;
+  $("#t-mastered").textContent = mastered;
+
+  const todo = due + fresh;
+  $("#today-sub").textContent = total === 0
+    ? "아직 단어가 없어요. 설정에서 기본 단어장을 불러오거나 직접 추가해 보세요."
+    : todo === 0
+      ? "오늘 복습할 단어를 모두 끝냈어요. 잘했어요!"
+      : "오늘 " + todo + "개를 보면 됩니다.";
+
+  const btn = $("#go-study");
+  btn.disabled = todo === 0;
+  btn.textContent = todo === 0 ? (total === 0 ? "단어를 먼저 넣어 주세요" : "오늘 학습 완료") : "학습 시작 · " + todo + "개";
+
+  $("#prog-label").textContent = mastered + " / " + total;
+  $("#prog-bar").style.width = (total ? (mastered / total) * 100 : 0) + "%";
+
+  const s = DB.meta.streak || 0;
+  $("#streak-line").textContent = s > 0
+    ? s + "일 연속으로 공부하고 있어요."
+    : "오늘 학습하면 연속 기록이 시작됩니다.";
+}
+
+function markStudied() {
+  const t = todayKey();
+  if (DB.meta.lastDay === t) return;
+  const y = new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
+  DB.meta.streak = DB.meta.lastDay === y ? (DB.meta.streak || 0) + 1 : 1;
+  DB.meta.lastDay = t;
+}
+
+/* ════ 단어 목록 ════════════════════════════════════════ */
+
+let dayFilter = "all";
+
+function allDays() {
+  const seen = [];
+  DB.words.forEach((w) => { if (!seen.includes(w.day)) seen.push(w.day); });
+  return seen.sort();
+}
+
+function renderWords() {
+  const days = allDays();
+  $("#words-sub").textContent = DB.words.length + "개의 단어";
+
+  $("#day-chips").innerHTML =
+    '<button class="chip' + (dayFilter === "all" ? " on" : "") + '" data-day="all">전체</button>' +
+    days.map((d) =>
+      '<button class="chip' + (dayFilter === d ? " on" : "") + '" data-day="' + esc(d) + '">' +
+      esc(d) + "</button>").join("");
+
+  $$("#day-chips .chip").forEach((c) =>
+    c.addEventListener("click", () => { dayFilter = c.dataset.day; renderWords(); }));
+
+  const q = $("#q").value.trim().toLowerCase();
+  const rows = DB.words.filter((w) => {
+    if (dayFilter !== "all" && w.day !== dayFilter) return false;
+    if (!q) return true;
+    return w.en.toLowerCase().includes(q) || w.ko.toLowerCase().includes(q);
+  });
+
+  const list = $("#word-list");
+  if (!rows.length) {
+    list.innerHTML = '<div class="empty">' +
+      (DB.words.length ? "찾는 단어가 없어요." : "아직 단어가 없어요.") + "</div>";
+    return;
+  }
+
+  list.innerHTML = rows.slice(0, 400).map((w) =>
+    '<button class="item" data-id="' + w.id + '">' +
+      '<span class="w">' +
+        '<span class="t en">' + esc(w.en) + "</span>" +
+        '<span class="m">' + esc(w.ko) + "</span>" +
+      "</span>" +
+      '<span class="pip b' + w.box + '">' + (isMastered(w) ? "완료" : isNew(w) ? "―" : w.box + "단계") + "</span>" +
+    "</button>").join("") +
+    (rows.length > 400 ? '<div class="empty">앞의 400개만 보여요. 검색으로 좁혀 보세요.</div>' : "");
+
+  $$("#word-list .item").forEach((el) =>
+    el.addEventListener("click", () => openEdit(el.dataset.id)));
+}
+
+$("#q").addEventListener("input", renderWords);
+
+/* ════ 시트: 추가 / 편집 / 붙여넣기 ══════════════════════ */
+
+function openSheet(html) {
+  $("#sheet-body").innerHTML = html;
+  $("#sheet").classList.add("on");
+}
+
+function closeSheet() { $("#sheet").classList.remove("on"); }
+
+$("#sheet").addEventListener("click", (e) => {
+  if (e.target === $("#sheet")) closeSheet();
+});
+
+function fieldSet(w) {
+  w = w || {};
+  return '<label class="f">단어</label>' +
+    '<input class="in" id="f-en" value="' + esc(w.en || "") + '" autocapitalize="none" autocorrect="off" spellcheck="false" />' +
+    '<label class="f">뜻</label>' +
+    '<input class="in" id="f-ko" value="' + esc(w.ko || "") + '" />' +
+    '<label class="f">품사 <span style="font-weight:400;color:var(--text-3)">· 선택</span></label>' +
+    '<input class="in" id="f-pos" value="' + esc(w.pos || "") + '" placeholder="v, n, a …" autocapitalize="none" />' +
+    '<label class="f">예문 <span style="font-weight:400;color:var(--text-3)">· 선택</span></label>' +
+    '<input class="in" id="f-ex" value="' + esc(w.ex || "") + '" />' +
+    '<label class="f">예문 뜻 <span style="font-weight:400;color:var(--text-3)">· 선택</span></label>' +
+    '<input class="in" id="f-exko" value="' + esc(w.exKo || "") + '" />';
+}
+
+function readFields() {
+  return {
+    en: $("#f-en").value.trim(),
+    ko: $("#f-ko").value.trim(),
+    pos: $("#f-pos").value.trim(),
+    ex: $("#f-ex").value.trim(),
+    exKo: $("#f-exko").value.trim(),
+  };
+}
+
+$("#open-add").addEventListener("click", () => {
+  openSheet("<h2>단어 추가</h2>" + fieldSet() +
+    '<div class="row" style="margin-top:18px">' +
+    '<button class="btn ghost" id="sh-cancel">취소</button>' +
+    '<button class="btn" id="sh-save">추가</button></div>');
+
+  $("#sh-cancel").addEventListener("click", closeSheet);
+  $("#sh-save").addEventListener("click", () => {
+    const f = readFields();
+    if (!f.en || !f.ko) { toast("단어와 뜻을 채워 주세요"); return; }
+    DB.words.push(newWord(f.en, f.pos, f.ko, f.ex, f.exKo, "내가 추가"));
+    save();
+    closeSheet();
+    renderWords();
+    toast("추가했어요");
+  });
+  setTimeout(() => $("#f-en").focus(), 60);
+});
+
+function openEdit(id) {
+  const w = DB.words.find((x) => x.id === id);
+  if (!w) return;
+  const stat = w.seen ? w.right + "번 맞고 " + w.wrong + "번 틀림" : "아직 학습 전";
+
+  openSheet("<h2>단어 편집</h2>" +
+    '<p class="hint" style="margin:0 0 4px">' + esc(w.day) + " · " + stat + "</p>" +
+    fieldSet(w) +
+    '<div class="row" style="margin-top:18px">' +
+    '<button class="btn ghost" id="sh-cancel">취소</button>' +
+    '<button class="btn" id="sh-save">저장</button></div>' +
+    '<button class="btn quiet" id="sh-reset" style="margin-top:8px">이 단어 진도 초기화</button>' +
+    '<button class="btn quiet" id="sh-del" style="margin-top:8px;border-color:var(--bad);color:var(--bad)">삭제</button>');
+
+  $("#sh-cancel").addEventListener("click", closeSheet);
+  $("#sh-save").addEventListener("click", () => {
+    const f = readFields();
+    if (!f.en || !f.ko) { toast("단어와 뜻을 채워 주세요"); return; }
+    Object.assign(w, f);
+    save(); closeSheet(); renderWords(); toast("저장했어요");
+  });
+  $("#sh-reset").addEventListener("click", () => {
+    w.box = 0; w.due = 0; w.seen = 0; w.right = 0; w.wrong = 0;
+    save(); closeSheet(); renderWords(); toast("진도를 초기화했어요");
+  });
+  $("#sh-del").addEventListener("click", () => {
+    DB.words = DB.words.filter((x) => x.id !== w.id);
+    save(); closeSheet(); renderWords(); toast("삭제했어요");
+  });
+}
+
+/* ── 붙여넣기 등록 ──────────────────────────────────── */
+
+function parseList(text) {
+  const out = [];
+  text.split(/\r?\n/).forEach((raw) => {
+    let line = raw.trim();
+    if (!line) return;
+    line = line.replace(/^\s*\d+\s*[.)\]]\s*/, "");   // "12. " 같은 번호 제거
+
+    let en = "", ko = "";
+    const h = line.search(/[가-힣]/);
+    if (h > 0) {
+      /* 한글이 시작되는 지점에서 자르는 게 가장 정확하다 —
+         뜻 안에 쉼표가 들어 있어도 안전하다 */
+      en = line.slice(0, h).replace(/[\s,;:\/\-–—|]+$/, "").trim();
+      ko = line.slice(h).trim();
+    } else {
+      const parts = line.split(/\t+|\s*\|\s*|\s{2,}|\s*,\s*/);
+      if (parts.length >= 2) {
+        en = parts[0].trim();
+        ko = parts.slice(1).join(", ").trim();
+      }
+    }
+    if (!en || !ko) return;
+
+    let pos = "";
+    const pm = en.match(/\(([a-z]{1,4})\.?\)\s*$/i) || ko.match(/^\(([a-z]{1,4})\.?\)\s*/i);
+    if (pm) {
+      pos = pm[1].toLowerCase();
+      en = en.replace(/\(([a-z]{1,4})\.?\)\s*$/i, "").trim();
+      ko = ko.replace(/^\(([a-z]{1,4})\.?\)\s*/i, "").trim();
+    }
+    if (en) out.push({ en, ko, pos });
+  });
+  return out;
+}
+
+$("#open-paste").addEventListener("click", () => {
+  openSheet("<h2>목록 붙여넣기</h2>" +
+    '<p class="hint" style="margin:0 0 10px">' +
+      "한 줄에 한 단어씩. <b>단어와 뜻 사이는 띄어쓰기, 탭, 쉼표</b> 어느 것이든 됩니다.<br />" +
+      "예) <span class=\"en\">accomplish</span> 이루다, 성취하다" +
+    "</p>" +
+    '<label class="f">단어장 이름</label>' +
+    '<input class="in" id="f-day" value="' + esc(defaultSetName()) + '" />' +
+    '<label class="f">목록</label>' +
+    '<textarea class="in" id="f-bulk" placeholder="accomplish 이루다, 성취하다&#10;abandon 버리다&#10;…"></textarea>' +
+    '<p class="hint" id="parse-info">0개 인식</p>' +
+    '<div class="row" style="margin-top:14px">' +
+    '<button class="btn ghost" id="sh-cancel">취소</button>' +
+    '<button class="btn" id="sh-save">등록</button></div>');
+
+  const ta = $("#f-bulk");
+  const info = $("#parse-info");
+  const update = () => {
+    const rows = parseList(ta.value);
+    const have = new Set(DB.words.map((w) => w.en.toLowerCase()));
+    const dup = rows.filter((r) => have.has(r.en.toLowerCase())).length;
+    info.textContent = rows.length + "개 인식" + (dup ? " · 이미 있는 단어 " + dup + "개는 건너뜁니다" : "");
+  };
+  ta.addEventListener("input", update);
+
+  $("#sh-cancel").addEventListener("click", closeSheet);
+  $("#sh-save").addEventListener("click", () => {
+    const day = $("#f-day").value.trim() || defaultSetName();
+    const rows = parseList(ta.value);
+    if (!rows.length) { toast("인식된 단어가 없어요"); return; }
+    const have = new Set(DB.words.map((w) => w.en.toLowerCase()));
+    let n = 0;
+    rows.forEach((r) => {
+      if (have.has(r.en.toLowerCase())) return;
+      have.add(r.en.toLowerCase());
+      DB.words.push(newWord(r.en, r.pos, r.ko, "", "", day));
+      n++;
+    });
+    save(); closeSheet(); renderWords();
+    toast(n + "개를 등록했어요");
+  });
+  setTimeout(() => ta.focus(), 60);
+});
+
+function defaultSetName() {
+  const d = new Date();
+  return "내 단어장 " + (d.getMonth() + 1) + "/" + d.getDate();
+}
+
+/* ════ 시험 모드 ════════════════════════════════════════ */
+
+let examDays = [];
+let examType = "choice";
+
+function renderExam() {
+  const days = allDays();
+  $("#exam-chips").innerHTML = days.length
+    ? days.map((d) =>
+        '<button class="chip' + (examDays.includes(d) ? " on" : "") + '" data-day="' + esc(d) + '">' +
+        esc(d) + "</button>").join("")
+    : '<span class="hint">단어를 먼저 넣어 주세요.</span>';
+
+  $$("#exam-chips .chip").forEach((c) =>
+    c.addEventListener("click", () => {
+      const d = c.dataset.day;
+      examDays = examDays.includes(d) ? examDays.filter((x) => x !== d) : examDays.concat(d);
+      renderExam();
+    }));
+
+  $$("#exam-type .chip").forEach((c) => {
+    c.classList.toggle("on", c.dataset.type === examType);
+    c.onclick = () => { examType = c.dataset.type; renderExam(); };
+  });
+
+  const n = examPool().length;
+  $("#exam-count").textContent = examDays.length
+    ? "선택한 범위 " + n + "개"
+    : "범위를 하나 이상 고르세요.";
+  $("#go-exam").disabled = n === 0;
+}
+
+function examPool() {
+  if (!examDays.length) return [];
+  return DB.words.filter((w) => examDays.includes(w.day));
+}
+
+/* ════ 학습 엔진 ════════════════════════════════════════ */
+
+const S = {
+  queue: [], cur: null, mode: "study", type: null,
+  done: 0, total: 0, wrongIds: [], answered: false,
+};
+
+function startStudy() {
+  const q = buildStudySession();
+  if (!q.length) return;
+  S.queue = q.map((w) => w.id);
+  S.mode = "study";
+  S.done = 0;
+  S.total = q.length;
+  S.wrongIds = [];
+  openStudy();
+}
+
+function startExam() {
+  const pool = shuffle(examPool());
+  if (!pool.length) return;
+  S.queue = pool.map((w) => w.id);
+  S.mode = "exam";
+  S.done = 0;
+  S.total = pool.length;
+  S.wrongIds = [];
+  openStudy();
+}
+
+function openStudy() {
+  $("#study").classList.add("on");
+  document.body.style.overflow = "hidden";
+  nextCard();
+}
+
+function closeStudy() {
+  $("#study").classList.remove("on");
+  document.body.style.overflow = "";
+  save();
+  go("today");
+}
+
+$("#study-close").addEventListener("click", closeStudy);
+$("#go-study").addEventListener("click", startStudy);
+$("#go-exam").addEventListener("click", startExam);
+
+function wordById(id) { return DB.words.find((w) => w.id === id); }
+
+function pickType(w) {
+  if (S.mode === "exam") return examType;
+  if (isNew(w)) return "intro";
+  if (w.box <= 2) return "choice";
+  return "spell";
+}
+
+function nextCard() {
+  if (!S.queue.length) return finish();
+  const w = wordById(S.queue[0]);
+  if (!w) { S.queue.shift(); return nextCard(); }
+
+  S.cur = w;
+  S.type = pickType(w);
+  S.answered = false;
+
+  const pct = S.total ? (S.done / S.total) * 100 : 0;
+  $("#study-bar").style.width = Math.min(100, pct) + "%";
+  $("#study-count").textContent = S.done + "/" + S.total;
+  $("#verdict").textContent = "";
+  $("#verdict").className = "verdict";
+
+  if (S.type === "intro") return drawIntro(w);
+  if (S.type === "flash") return drawFlash(w);
+  if (S.type === "spell") return drawSpell(w);
+  return drawChoice(w);
+}
+
+function speakBtn() {
+  return '<button class="speak" id="btn-speak" aria-label="발음 듣기">' +
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M11 5L6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /></svg></button>';
+}
+
+function bindSpeak(text) {
+  const b = $("#btn-speak");
+  if (b) b.addEventListener("click", () => speak(text));
+}
+
+/* v, n 같은 약어보다 한글이 바로 읽힌다 */
+const POS_KO = {
+  v: "동사", n: "명사", a: "형용사", adj: "형용사", ad: "부사", adv: "부사",
+  prep: "전치사", conj: "접속사", pron: "대명사", int: "감탄사",
+};
+
+function posLabel(p) {
+  return POS_KO[String(p).toLowerCase().replace(/\.$/, "")] || p;
+}
+
+function meaningBlock(w) {
+  return '<div class="mean">' +
+      (w.pos ? '<span class="postag">' + esc(posLabel(w.pos)) + "</span>" : "") +
+      esc(w.ko) + "</div>" +
+    (w.ex ? '<div class="ex">' + esc(w.ex) + "</div>" : "") +
+    (w.exKo ? '<div class="exk">' + esc(w.exKo) + "</div>" : "");
+}
+
+/* ── 새 단어 소개 ──────────────────────────────────── */
+
+function drawIntro(w) {
+  $("#prompt").innerHTML = '<div class="eyebrow">새 단어</div>' +
+    '<div class="term">' + esc(w.en) + "</div>" + speakBtn();
+  $("#answer").innerHTML = '<div class="reveal">' + meaningBlock(w) + "</div>";
+  $("#study-foot").innerHTML = '<button class="btn" id="ok">외웠어요</button>';
+  bindSpeak(w.en);
+  $("#ok").addEventListener("click", () => {
+    grade(w, true);
+    advance(true);
+  });
+}
+
+/* ── 카드 넘기기 ───────────────────────────────────── */
+
+function drawFlash(w) {
+  $("#prompt").innerHTML = '<div class="term">' + esc(w.en) + "</div>" + speakBtn();
+  $("#answer").innerHTML = "";
+  $("#study-foot").innerHTML = '<button class="btn ghost" id="flip">뜻 보기</button>';
+  bindSpeak(w.en);
+  $("#flip").addEventListener("click", () => {
+    $("#answer").innerHTML = '<div class="reveal">' + meaningBlock(w) + "</div>";
+    $("#study-foot").innerHTML =
+      '<div class="row" style="margin:0">' +
+      '<button class="btn ghost" id="no" style="border-color:var(--bad);color:var(--bad)">몰랐어요</button>' +
+      '<button class="btn" id="yes">알았어요</button></div>';
+    $("#no").addEventListener("click", () => { grade(w, false); advance(false); });
+    $("#yes").addEventListener("click", () => { grade(w, true); advance(true); });
+  });
+}
+
+/* ── 4지선다 ───────────────────────────────────────── */
+
+function drawChoice(w) {
+  const others = shuffle(DB.words.filter((x) => x.id !== w.id && x.ko !== w.ko)).slice(0, 3);
+  const opts = shuffle([w].concat(others));
+
+  $("#prompt").innerHTML = '<div class="term">' + esc(w.en) + "</div>" +
+    (w.pos ? '<div class="pos">' + esc(posLabel(w.pos)) + "</div>" : "");
+  $("#answer").innerHTML = '<div class="choices">' + opts.map((o, i) =>
+    '<button class="choice" data-id="' + o.id + '"><span class="k">' + (i + 1) + "</span>" +
+    "<span>" + esc(o.ko) + "</span></button>").join("") + "</div>";
+  $("#study-foot").innerHTML = "";
+
+  $$("#answer .choice").forEach((btn) =>
+    btn.addEventListener("click", () => answerChoice(btn, w)));
+}
+
+function answerChoice(btn, w) {
+  if (S.answered) return;
+  S.answered = true;
+  const ok = btn.dataset.id === w.id;
+
+  $$("#answer .choice").forEach((b) => {
+    if (b.dataset.id === w.id) b.classList.add("right");
+    else if (b === btn) b.classList.add("wrong");
+    b.disabled = true;
+  });
+
+  grade(w, ok);
+  showVerdict(ok, w);
+}
+
+/* ── 스펠링 ────────────────────────────────────────── */
+
+function drawSpell(w) {
+  $("#prompt").innerHTML = '<div class="eyebrow">스펠링</div>' +
+    '<div class="kterm">' + esc(w.ko) + "</div>" +
+    (w.pos ? '<div class="pos">' + esc(posLabel(w.pos)) + "</div>" : "");
+  $("#answer").innerHTML =
+    '<input class="spell" id="sp" placeholder="영어로 쓰기" autocapitalize="none" ' +
+    'autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" />';
+  $("#study-foot").innerHTML = '<button class="btn" id="sp-ok">확인</button>';
+
+  const inp = $("#sp");
+  setTimeout(() => inp.focus(), 60);
+
+  const submit = () => {
+    if (S.answered) return;
+    const given = inp.value.trim().toLowerCase();
+    if (!given) return;
+    S.answered = true;
+    const ok = given === w.en.trim().toLowerCase();
+    inp.classList.add(ok ? "right" : "wrong");
+    inp.disabled = true;
+    if (!ok) inp.value = w.en;
+    grade(w, ok);
+    showVerdict(ok, w);
+  };
+
+  $("#sp-ok").addEventListener("click", submit);
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+}
+
+/* ── 채점 후 ───────────────────────────────────────── */
+
+function showVerdict(ok, w) {
+  const v = $("#verdict");
+  v.className = "verdict " + (ok ? "right" : "wrong");
+  v.textContent = ok ? "정답" : "다시 만나요";
+
+  const extra = document.createElement("div");
+  extra.className = "reveal";
+  extra.style.marginTop = "14px";
+  extra.innerHTML = meaningBlock(w) + speakBtn();
+  $("#answer").appendChild(extra);
+  bindSpeak(w.en);
+
+  $("#study-foot").innerHTML = '<button class="btn" id="next">다음</button>';
+  $("#next").addEventListener("click", () => advance(ok));
+
+  if (ok) setTimeout(() => { if (S.answered) advance(true); }, 750);
+}
+
+function advance(ok) {
+  if (!S.cur) return;
+  const id = S.cur.id;
+  S.cur = null;
+  S.answered = false;
+  S.queue.shift();
+
+  if (ok) {
+    S.done++;
+  } else {
+    if (!S.wrongIds.includes(id)) S.wrongIds.push(id);
+    /* 틀린 단어는 세션 안에서 몇 장 뒤에 다시 나온다 */
+    const at = Math.min(S.queue.length, 3);
+    S.queue.splice(at, 0, id);
+  }
+  save();
+  nextCard();
+}
+
+function finish() {
+  markStudied();
+  save();
+
+  const wrong = S.wrongIds.length;
+  const acc = S.total ? Math.round(((S.total - wrong) / S.total) * 100) : 100;
+
+  $("#prompt").innerHTML = '<div class="eyebrow">' +
+    (S.mode === "exam" ? "시험 끝" : "오늘 학습 끝") + "</div>" +
+    '<div class="kterm" style="margin-top:8px">' + S.total + "개를 봤어요</div>";
+
+  $("#answer").innerHTML = '<div class="reveal" style="border:none">' +
+    '<div class="mean">한 번에 맞힌 비율 ' + acc + "%</div>" +
+    (wrong
+      ? '<div class="exk" style="margin-top:8px">' + wrong + "개는 헷갈렸어요. 곧 다시 만나게 됩니다.</div>"
+      : '<div class="exk" style="margin-top:8px">하나도 안 틀렸어요.</div>') +
+    "</div>";
+
+  $("#verdict").textContent = "";
+  $("#study-foot").innerHTML = '<button class="btn" id="done">끝내기</button>';
+  $("#done").addEventListener("click", closeStudy);
+  $("#study-bar").style.width = "100%";
+  $("#study-count").textContent = S.total + "/" + S.total;
+}
+
+/* 데스크톱 키보드 */
+document.addEventListener("keydown", (e) => {
+  if (!$("#study").classList.contains("on")) return;
+  if (e.key === "Escape") return closeStudy();
+  const nextBtn = $("#next") || $("#ok") || $("#done") || $("#flip");
+  if (e.key === " " && nextBtn && document.activeElement.tagName !== "INPUT") {
+    e.preventDefault(); nextBtn.click(); return;
+  }
+  if (S.type === "choice" && !S.answered && /^[1-4]$/.test(e.key)) {
+    const b = $$("#answer .choice")[Number(e.key) - 1];
+    if (b) b.click();
+  }
+});
+
+/* ════ 설정 ════════════════════════════════════════════ */
+
+function applyTheme() {
+  const t = DB.settings.theme;
+  if (t === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+}
+
+function renderSettings() {
+  $("#new-val").textContent = DB.settings.dailyNew;
+  $$("#theme-pick .chip").forEach((c) => {
+    c.classList.toggle("on", c.dataset.theme === DB.settings.theme);
+    c.onclick = () => {
+      DB.settings.theme = c.dataset.theme;
+      applyTheme(); save(); renderSettings();
+    };
+  });
+  const loaded = DB.words.some((w) => w.day.startsWith("DAY "));
+  $("#builtin-state").textContent = loaded ? "이미 불러왔어요 · DAY 01–15" : "DAY 01–15 · 300개";
+  $("#load-builtin").textContent = loaded ? "다시 확인" : "불러오기";
+}
+
+$("#new-minus").addEventListener("click", () => {
+  DB.settings.dailyNew = Math.max(5, DB.settings.dailyNew - 5);
+  save(); renderSettings();
+});
+$("#new-plus").addEventListener("click", () => {
+  DB.settings.dailyNew = Math.min(60, DB.settings.dailyNew + 5);
+  save(); renderSettings();
+});
+
+$("#load-builtin").addEventListener("click", () => {
+  const have = new Set(DB.words.map((w) => w.en.toLowerCase()));
+  let n = 0;
+  BUILTIN.forEach((day) => {
+    day.words.forEach((r) => {
+      if (have.has(r[0].toLowerCase())) return;
+      have.add(r[0].toLowerCase());
+      DB.words.push(newWord(r[0], r[1], r[2], r[3], r[4], day.name));
+      n++;
+    });
+  });
+  DB.meta.builtinLoaded = true;
+  save(); renderSettings();
+  toast(n ? n + "개를 불러왔어요" : "이미 다 들어 있어요");
+});
+
+/* ── 백업 ──────────────────────────────────────────── */
+
+async function exportData() {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const name = "단어장-백업-" + stamp + ".json";
+  const text = JSON.stringify(DB, null, 1);
+
+  if (window.claude && window.claude.downloads) {
+    try {
+      await window.claude.downloads.save({ filename: name, data: text });
+      toast("백업을 저장했어요");
+      return;
+    } catch (e) {
+      toast("저장이 취소됐어요");
+      return;
+    }
+  }
+
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("백업 파일을 내려받았어요");
+}
+
+$("#do-export").addEventListener("click", exportData);
+$("#do-import").addEventListener("click", () => $("#file-in").click());
+
+$("#file-in").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const parsed = JSON.parse(r.result);
+      if (!parsed || !Array.isArray(parsed.words)) throw new Error("형식이 달라요");
+      DB = Object.assign(DEFAULTS(), parsed);
+      DB.settings = Object.assign(DEFAULTS().settings, parsed.settings || {});
+      DB.meta = Object.assign(DEFAULTS().meta, parsed.meta || {});
+      save(); applyTheme(); go("today");
+      toast(DB.words.length + "개를 복원했어요");
+    } catch (err) {
+      toast("이 파일은 읽을 수 없어요");
+    }
+    e.target.value = "";
+  };
+  r.readAsText(f);
+});
+
+$("#do-reset").addEventListener("click", () => {
+  openSheet("<h2>모든 데이터를 지울까요?</h2>" +
+    '<p class="hint" style="margin:2px 0 0">단어와 학습 기록이 전부 사라집니다. 되돌릴 수 없어요.</p>' +
+    '<div class="row" style="margin-top:18px">' +
+    '<button class="btn ghost" id="sh-cancel">그만두기</button>' +
+    '<button class="btn danger" id="sh-wipe">지우기</button></div>');
+  $("#sh-cancel").addEventListener("click", closeSheet);
+  $("#sh-wipe").addEventListener("click", () => {
+    DB = DEFAULTS();
+    save(); applyTheme(); closeSheet(); go("today");
+    toast("모두 지웠어요");
+  });
+});
+
+/* ════ 시작 ════════════════════════════════════════════ */
+
+load();
+applyTheme();
+go("today");
+</script>
+</body>
+</html>

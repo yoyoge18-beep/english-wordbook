@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>VoCat 경쟁 앱 분석</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; }
+    h1, h2, h3, p, ul, ol, dl, dd, figure, table { margin: 0; }
+    ul, ol { padding: 0; }
+    table { border-spacing: 0; }
+  </style>
+  <style>
+    :root {
+      --paper: #EEF1F5;
+      --surface: #FAFBFD;
+      --ink: #0F141C;
+      --ink-2: #4A5462;
+      --ink-3: #818B9A;
+      --rule: #D5DBE4;
+      --rule-strong: #B4BECC;
+      --indigo: #27367E;
+      --indigo-soft: rgba(39, 54, 126, 0.09);
+      --marker: rgba(243, 198, 75, 0.48);
+      --flag: #A63E29;
+      --flag-soft: rgba(166, 62, 41, 0.07);
+  
+      --sans: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", -apple-system,
+        BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+      --measure: 66ch;
+    }
+  
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #0E1118;
+        --surface: #161A22;
+        --ink: #E9ECF2;
+        --ink-2: #A5AEBC;
+        --ink-3: #6B7586;
+        --rule: #242A35;
+        --rule-strong: #36404F;
+        --indigo: #93A6F2;
+        --indigo-soft: rgba(147, 166, 242, 0.11);
+        --marker: rgba(217, 174, 71, 0.30);
+        --flag: #DE8069;
+        --flag-soft: rgba(222, 128, 105, 0.10);
+      }
+    }
+  
+    :root[data-theme="dark"] {
+      --paper: #0E1118;
+      --surface: #161A22;
+      --ink: #E9ECF2;
+      --ink-2: #A5AEBC;
+      --ink-3: #6B7586;
+      --rule: #242A35;
+      --rule-strong: #36404F;
+      --indigo: #93A6F2;
+      --indigo-soft: rgba(147, 166, 242, 0.11);
+      --marker: rgba(217, 174, 71, 0.30);
+      --flag: #DE8069;
+      --flag-soft: rgba(222, 128, 105, 0.10);
+    }
+  
+    :root[data-theme="light"] {
+      --paper: #EEF1F5;
+      --surface: #FAFBFD;
+      --ink: #0F141C;
+      --ink-2: #4A5462;
+      --ink-3: #818B9A;
+      --rule: #D5DBE4;
+      --rule-strong: #B4BECC;
+      --indigo: #27367E;
+      --indigo-soft: rgba(39, 54, 126, 0.09);
+      --marker: rgba(243, 198, 75, 0.48);
+      --flag: #A63E29;
+      --flag-soft: rgba(166, 62, 41, 0.07);
+    }
+  
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+  
+    .page {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: clamp(32px, 6vw, 80px) clamp(20px, 4vw, 44px) clamp(64px, 9vw, 120px);
+    }
+  
+    a {
+      color: var(--indigo);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+  
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--indigo);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  
+    /* ─── masthead ─────────────────────────────────────────── */
+  
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--indigo);
+      margin-bottom: 18px;
+    }
+  
+    .masthead h1 {
+      font-size: clamp(34px, 6vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      text-wrap: balance;
+      margin-bottom: 20px;
+    }
+  
+    .dek {
+      font-size: clamp(17px, 2.2vw, 20px);
+      line-height: 1.6;
+      color: var(--ink-2);
+      max-width: 34ch;
+      text-wrap: balance;
+    }
+  
+    .byline {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+    }
+  
+    /* ─── stat strip ───────────────────────────────────────── */
+  
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 1px;
+      background: var(--rule);
+      border-block: 1px solid var(--rule);
+      margin: clamp(40px, 6vw, 64px) 0 clamp(36px, 5vw, 56px);
+    }
+  
+    .stat {
+      background: var(--paper);
+      padding: 20px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+  
+    .stat .value {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+  
+    .stat .label {
+      font-size: 13px;
+      color: var(--ink-3);
+    }
+  
+    .stat .note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+    }
+  
+    /* ─── section frame ────────────────────────────────────── */
+  
+    .sec {
+      display: grid;
+      grid-template-columns: minmax(0, var(--measure));
+      gap: 10px 34px;
+      padding-block: clamp(30px, 4.5vw, 46px);
+      border-top: 1px solid var(--rule);
+    }
+  
+    @media (min-width: 920px) {
+      .sec {
+        grid-template-columns: 116px minmax(0, var(--measure));
+      }
+    }
+  
+    .gutter {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding-top: 7px;
+    }
+  
+    .sec h2 {
+      font-size: clamp(21px, 2.8vw, 25px);
+      font-weight: 700;
+      letter-spacing: -0.022em;
+      line-height: 1.32;
+      text-wrap: balance;
+      margin-bottom: 14px;
+    }
+  
+    .sec p {
+      margin-bottom: 14px;
+      max-width: var(--measure);
+    }
+  
+    .sec p:last-child,
+    .sec ul:last-child {
+      margin-bottom: 0;
+    }
+  
+    .mark {
+      background: linear-gradient(transparent 56%, var(--marker) 56%);
+      padding-inline: 1px;
+    }
+  
+    strong {
+      font-weight: 700;
+    }
+  
+    /* Korean faces synthesize italics poorly — emphasize with weight instead. */
+    em {
+      font-style: normal;
+      font-weight: 600;
+    }
+  
+    /* ─── lists ────────────────────────────────────────────── */
+  
+    .plain {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+  
+    .plain li {
+      padding-left: 17px;
+      position: relative;
+      color: var(--ink-2);
+    }
+  
+    .plain li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.72em;
+      width: 6px;
+      height: 1px;
+      background: var(--rule-strong);
+    }
+  
+    .plain li strong {
+      color: var(--ink);
+    }
+  
+    /* ─── feature groups ───────────────────────────────────── */
+  
+    .groups {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--rule);
+      border-block: 1px solid var(--rule);
+    }
+  
+    .group {
+      background: var(--paper);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3px;
+      padding: 15px 0;
+    }
+  
+    @media (min-width: 640px) {
+      .group {
+        grid-template-columns: 82px 1fr;
+        gap: 18px;
+      }
+    }
+  
+    .group dt {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--indigo);
+      padding-top: 5px;
+    }
+  
+    .group dd {
+      color: var(--ink-2);
+      font-size: 15px;
+      line-height: 1.66;
+    }
+  
+    /* ─── timeline ─────────────────────────────────────────── */
+  
+    .rail {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      margin-bottom: 18px;
+    }
+  
+    @media (min-width: 680px) {
+      .rail {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  
+    .step {
+      background: var(--surface);
+      padding: 15px 16px 17px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+  
+    .step time {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+  
+    .step .what {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+  
+    .step .how {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+  
+    .step.pivot {
+      background: var(--indigo-soft);
+    }
+  
+    .step.pivot time,
+    .step.pivot .what {
+      color: var(--indigo);
+    }
+  
+    /* ─── pricing table ────────────────────────────────────── */
+  
+    .scroll {
+      overflow-x: auto;
+      margin-bottom: 14px;
+    }
+  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 380px;
+    }
+  
+    th,
+    td {
+      text-align: left;
+      padding: 11px 14px 11px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+  
+    th {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      font-weight: 400;
+      border-bottom-color: var(--rule-strong);
+    }
+  
+    td.num {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      padding-right: 0;
+    }
+  
+    th.num {
+      text-align: right;
+      padding-right: 0;
+    }
+  
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  
+    .tier {
+      font-weight: 600;
+    }
+  
+    caption {
+      caption-side: bottom;
+      text-align: left;
+      font-size: 13px;
+      color: var(--ink-3);
+      padding-top: 12px;
+      line-height: 1.55;
+    }
+  
+    /* ─── caveat ───────────────────────────────────────────── */
+  
+    .caveat {
+      background: var(--flag-soft);
+      border: 1px solid color-mix(in srgb, var(--flag) 26%, transparent);
+      padding: 20px 22px;
+    }
+  
+    .caveat .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--flag);
+      display: block;
+      margin-bottom: 9px;
+    }
+  
+    .caveat p {
+      color: var(--ink-2);
+    }
+  
+    .caveat p:last-child {
+      margin-bottom: 0;
+    }
+  
+    /* ─── takeaways ────────────────────────────────────────── */
+  
+    .takes {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  
+    .takes li {
+      padding-left: 20px;
+      border-left: 2px solid var(--rule-strong);
+    }
+  
+    .takes li.hot {
+      border-left-color: var(--indigo);
+    }
+  
+    .takes h3 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      margin-bottom: 4px;
+      line-height: 1.45;
+    }
+  
+    .takes p {
+      font-size: 15px;
+      color: var(--ink-2);
+      margin-bottom: 0;
+    }
+  
+    /* ─── colophon ─────────────────────────────────────────── */
+  
+    .colophon {
+      border-top: 1px solid var(--rule);
+      padding-top: 22px;
+      margin-top: clamp(30px, 4.5vw, 46px);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.9;
+      color: var(--ink-3);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">경쟁 앱 분석 · App Store 한국</div>
+    <h1>VoCat<br />나만의 단어장</h1>
+    <p class="dek">
+      6년간 전면 무료였던 국내 단어장 앱이, 3주 전 조용히 구독제로 넘어갔다.
+    </p>
+    <div class="byline">
+      <span>DevStory Corp.</span>
+      <span>·</span>
+      <span>iOS · Android</span>
+      <span>·</span>
+      <span>분석일 2026.08.07</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="value">4.87</span>
+      <span class="label">앱스토어 평점</span>
+      <span class="note">5점 만점</span>
+    </div>
+    <div class="stat">
+      <span class="value">5,331</span>
+      <span class="label">누적 평가 수</span>
+      <span class="note">한국 스토어</span>
+    </div>
+    <div class="stat">
+      <span class="value">5년 8개월</span>
+      <span class="label">무료로 운영된 기간</span>
+      <span class="note">2020.11 → 2026.07</span>
+    </div>
+    <div class="stat">
+      <span class="value">25일</span>
+      <span class="label">구독 도입 후 경과</span>
+      <span class="note">v5.0.2 · 07.13</span>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="gutter">정체</div>
+    <div>
+      <h2>학습 알고리즘이 아니라, 입력 마찰을 없앤 도구다</h2>
+      <p>
+        VoCat의 설계 중심축은 <strong>"단어를 얼마나 빨리 집어넣을 수 있는가"</strong>에
+        있습니다. 암기 효율을 끌어올리는 엔진이 아니라, 단어장을 만드는 수고를
+        걷어내는 데 제품 역량이 집중돼 있어요.
+      </p>
+      <ul class="plain">
+        <li><strong>자동완성</strong> — 단어만 입력하면 구글 번역이 뜻·품사·동의어를 채웁니다. 최신 버전에서 "AI 자동완성"이 추가됐습니다.</li>
+        <li><strong>CSV 임포트</strong> — 엑셀·구글시트에서 만든 목록을 그대로 흡수합니다.</li>
+        <li><strong>서점</strong> — 직접 만들 필요조차 없도록 기성 단어장을 제공합니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">기능</div>
+    <div>
+      <h2>기능 구조</h2>
+      <div class="groups">
+        <dl class="group">
+          <dt>입력</dt>
+          <dd>자동완성(구글 번역 · AI) · CSV 임포트 · 단어/뜻 외 이미지·품사·발음·동의어·반의어·설명 필드 · 앨범/카메라/구글 이미지 URL로 사진 첨부</dd>
+        </dl>
+        <dl class="group">
+          <dt>학습</dt>
+          <dd>플래시카드 · 사지선다(타이머) · 받아쓰기(엄격채점) · 깜빡이(무한 반복 청취) · 아는/모르는 마크 · 하루 학습량 일정 · 알림 · 기기 내장 TTS</dd>
+        </dl>
+        <dl class="group">
+          <dt>콘텐츠</dt>
+          <dd>교육부 지정 초·중·고 영단어 · 수능 기출 · 공무원 · TOEIC · G-TELP · SAT · JLPT 1–5급 · HSK 1–6급 · 의학 용어 사전</dd>
+        </dl>
+        <dl class="group">
+          <dt>보관</dt>
+          <dd>CSV 공유 · 파일 백업 · 구글 드라이브 백업 및 기기간 동기화</dd>
+        </dl>
+        <dl class="group">
+          <dt>외형</dt>
+          <dd>화이트 / 다크블루 테마 · 다중 폰트 · 고양이 마스코트 네로 · 68개 언어 · 오프라인 동작</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">전환점</div>
+    <div>
+      <h2>이 분석에서 가장 중요한 사실</h2>
+
+      <div class="rail">
+        <div class="step">
+          <time>2020.11.10</time>
+          <span class="what">출시</span>
+          <span class="how">iOS · Android 동시 전개</span>
+        </div>
+        <div class="step">
+          <time>2021 – 2026.06</time>
+          <span class="what">전면 무료 운영</span>
+          <span class="how">리뷰 다수가 "제한 없이 무료"를 극찬</span>
+        </div>
+        <div class="step pivot">
+          <time>2026.07.13</time>
+          <span class="what">v5.0.2 — 구독 도입</span>
+          <span class="how">Premium · Pro 2단 구조 + AI 자동완성</span>
+        </div>
+        <div class="step">
+          <time>2026.08.07</time>
+          <span class="what">현재</span>
+          <span class="how">전환 후 25일 경과</span>
+        </div>
+      </div>
+
+      <p>
+        릴리스 노트에 "프리미엄 &amp; 프로 구독 기능이 추가되었어요"가 명시돼
+        있습니다. 그런데 2022년·2025년에 달린 리뷰들은 하나같이
+        <em>"무료로 쓸 수 있는 기능이라고는 생각도 못할 만큼"</em>,
+        <em>"제한 없이 무료인데다"</em>라고 적고 있어요. 여기서 두 가지가 따라옵니다.
+      </p>
+      <p>
+        <span class="mark"><strong>평점 4.87은 현재 제품에 대한 평가가 아닙니다.</strong></span>
+        5,331개 평가의 대부분이 무료 시절에 쌓인 자산이고, 구독 전환에 대한 시장
+        반응은 아직 이 숫자에 반영되지 않았습니다. 이 앱의 방어력을 실제보다
+        강하게 보이게 만드는 착시입니다.
+      </p>
+      <p>
+        그리고 <span class="mark"><strong>지금이 이탈이 발생하는 구간</strong></span>입니다.
+        무료를 전제로 정착했던 사용자층이 재평가를 시작한 시점이에요.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">가격</div>
+    <div>
+      <h2>수익 구조</h2>
+      <div class="scroll">
+        <table>
+          <caption>
+            연간 구독은 두 티어 모두 월간 대비 약 30% 할인. 개인정보 항목에
+            "타사 광고" 목적의 사용 데이터 수집이 있어, 무료 티어에 광고가 있는
+            것으로 보입니다(직접 확인하지 못함).
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">티어</th>
+              <th scope="col" class="num">월간</th>
+              <th scope="col" class="num">연간</th>
+              <th scope="col" class="num">월 환산</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tier">Premium</td>
+              <td class="num">₩4,900</td>
+              <td class="num">₩40,900</td>
+              <td class="num">₩3,408</td>
+            </tr>
+            <tr>
+              <td class="tier">Pro</td>
+              <td class="num">₩7,900</td>
+              <td class="num">₩66,000</td>
+              <td class="num">₩5,500</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">빈틈</div>
+    <div>
+      <h2>구조적 빈틈</h2>
+      <p>사용자가 리뷰에서 직접 지적한 것:</p>
+      <ul class="plain">
+        <li><strong>자동 동기화 불안정</strong> (2025.09) — 동기화가 계정 기반이 아니라 구글 드라이브 <em>파일 백업</em> 방식이라, 구조에서 오는 한계로 보입니다.</li>
+        <li><strong>TTS 자연스러움</strong> (2022) — 기기 내장 엔진에 의존. 4년이 지난 지금도 내장 TTS입니다.</li>
+        <li><strong>사용자 정의 마크 부재</strong> (2025.04) — 스페인어 남성/여성 명사처럼 언어별 분류를 만들 수 없습니다.</li>
+        <li><strong>키보드 단축키</strong>가 여러 키를 눌러야 해 불편.</li>
+      </ul>
+      <p>제가 보기에 더 큰 것은 이쪽입니다:</p>
+      <ul class="plain">
+        <li><strong>간격 반복(SRS)이 핵심이 아닙니다.</strong> 학습 일정이 "하루 N개 지정" 방식이지, 망각곡선에 따라 복습 시점을 계산해 단어를 다시 띄우는 구조가 아닙니다. 마크로 아는/모르는 구분은 되지만 스케줄링과 연결되지 않아요. Anki가 가진 힘이 여기엔 없습니다.</li>
+        <li><strong>서버 계정이 없어 보입니다.</strong> 그래서 웹 버전이 없고, 실시간 다기기 동기화가 약하고, 공유도 CSV 파일 전달 수준에 머뭅니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">미확인</div>
+    <div class="caveat">
+      <span class="tag">확인하지 못한 것</span>
+      <p>
+        <strong>무료 / Premium / Pro 각 티어에 정확히 무엇이 포함되는지 알아내지
+        못했습니다.</strong> 개발사 사이트에 요금제 표가 없고, 앱스토어는 인앱결제
+        항목명과 가격만 노출합니다.
+      </p>
+      <p>
+        단어 개수 제한인지, AI 자동완성 횟수 제한인지, 광고 제거인지가 경쟁 분석의
+        핵심인데 바로 이 지점이 비어 있습니다. 실제로 앱을 설치해 페이월을 봐야
+        확인됩니다.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gutter">시사점</div>
+    <div>
+      <h2>여기서 무엇을 할 수 있나</h2>
+      <ul class="takes">
+        <li class="hot">
+          <h3>정면 승부는 불리하다</h3>
+          <p>"입력이 편한 단어장 + 기성 단어장 제공"은 VoCat이 6년간 쌓아 굳힌 자리입니다. 같은 축으로 붙으면 누적량에서 집니다.</p>
+        </li>
+        <li class="hot">
+          <h3>비어 있는 축은 학습 알고리즘이다</h3>
+          <p>SRS 기반 복습 스케줄링, 계정 기반 실시간 동기화와 웹, 발음·예문 품질. 셋 다 VoCat이 강조하지 않는 영역입니다.</p>
+        </li>
+        <li>
+          <h3>이주 장벽을 먼저 낮춰라</h3>
+          <p>VoCat이 내보내는 CSV를 그대로 읽어들이면, 구독 전환에 흔들리는 사용자가 자기 단어장을 잃지 않고 넘어올 수 있습니다.</p>
+        </li>
+        <li>
+          <h3>타이밍이 지금이다</h3>
+          <p>전환 후 25일. 무료를 전제로 정착했던 사용자가 대안을 찾아보는 창이 열려 있습니다.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>출처 — App Store 한국 스토어 페이지 · iTunes Lookup API · vocat.devstory.co.kr</span>
+    <span>버전 5.0.2 · 175MB · iOS 15.5+ · 교육 카테고리 · 4+ · 68개 언어</span>
+    <span>수치는 2026년 8월 7일 기준</span>
+  </footer>
+
+</div>
+</body>
+</html>
