@@ -609,6 +609,26 @@
   .spell.right { border-color: var(--good); color: var(--good); }
   .spell.wrong { border-color: var(--bad); color: var(--bad); }
 
+  /* 입력값은 영어라 세리프가 맞지만, 안내 문구는 한글이라 그대로 두면
+     자간이 벌어져 읽기 나쁘다. 문구만 한글 글꼴로 되돌린다 */
+  .spell::placeholder {
+    font-family: var(--kr);
+    font-size: 16px;
+    letter-spacing: normal;
+    color: var(--text-3);
+  }
+
+  /* 새 단어 카드에서 따라 쓰는 칸 — 뜻·예문과 붙지 않게 띄운다 */
+  .trace { margin-top: 22px; }
+
+  /* 발음 음성 고르기 */
+  .voice-row { cursor: pointer; }
+  .voice-row .lab { font-family: var(--en); }
+  .voice-row .tick { color: var(--amber); visibility: hidden; margin-right: 6px; }
+  .voice-row.on .tick { visibility: visible; }
+  .voice-row.on .lab { color: var(--amber); }
+  .vplay { flex: none; width: auto; padding: 0 15px; }
+
   .verdict {
     text-align: center;
     font-size: 14px;
@@ -860,6 +880,12 @@
         </div>
       </div>
 
+      <h2 style="margin-top:22px">발음</h2>
+      <div class="card" id="voice-card"></div>
+      <p class="hint">
+        브라우저마다 쓸 수 있는 음성이 다릅니다. ▶ 로 들어 보고 마음에 드는 것을 고르세요.
+      </p>
+
       <h2 style="margin-top:22px">단어장</h2>
       <div class="card">
         <div class="setrow">
@@ -966,7 +992,7 @@ let storageOK = true;
 
 const DEFAULTS = () => ({
   words: [],
-  settings: { dailyNew: 20, theme: "auto" },
+  settings: { dailyNew: 20, theme: "auto", voice: "auto" },
   meta: { streak: 0, lastDay: null, builtinLoaded: false },
 });
 
@@ -1086,16 +1112,81 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("on"), 1900);
 }
 
+/* voice 를 지정하지 않으면 브라우저가 목록의 첫 en-US 음성을 쓴다. macOS 에서는
+   그게 Albert 같은 1980년대식 저품질 음성이라 발음이 뭉개진다. 자연스러운 음성을
+   이름으로 직접 고른다. */
+const PREFERRED_VOICES = [
+  "Google US English",  // Chrome 제공, 가장 자연스럽다. 네트워크가 필요하다
+  "Samantha",           // macOS 기본 고품질. 오프라인에서도 된다
+  "Ava", "Allison", "Susan", "Alex", "Tom",       // macOS 추가 음성
+  "Microsoft Aria", "Microsoft Jenny", "Microsoft Zira",  // Windows
+];
+
+/* 장난 음성. 브라우저마다 목록이 달라 숨기지는 않고 뒤로 내리기만 한다 */
+const NOVELTY_VOICES = [
+  "Albert", "Bad News", "Bahh", "Bells", "Boing", "Bubbles", "Cellos", "Fred",
+  "Good News", "Jester", "Junior", "Kathy", "Organ", "Ralph", "Superstar",
+  "Trinoids", "Whisper", "Wobble", "Zarvox",
+];
+
+function isNovelty(v) {
+  return NOVELTY_VOICES.some((n) => v.name.startsWith(n));
+}
+
+/* 이 브라우저가 가진 영어 음성. 쓸 만한 것부터 앞에 온다 */
+function englishVoices() {
+  return speechSynthesis.getVoices()
+    .filter((v) => /^en/i.test(v.lang))
+    .sort((a, b) => (isNovelty(a) - isNovelty(b)) || a.name.localeCompare(b.name));
+}
+
+function pickVoice(localOnly) {
+  const vs = englishVoices().filter((v) => !localOnly || v.localService);
+  if (!vs.length) return null;
+
+  /* 사용자가 직접 고른 음성이 최우선. 다른 기기라 그 음성이 없으면 자동으로 돌아간다 */
+  if (DB.settings.voice && DB.settings.voice !== "auto") {
+    const chosen = vs.find((v) => v.name === DB.settings.voice);
+    if (chosen) return chosen;
+  }
+
+  for (const want of PREFERRED_VOICES) {
+    const hit = vs.find((v) => v.name.startsWith(want));
+    if (hit) return hit;
+  }
+  /* 아는 이름이 없으면 그 브라우저가 en-US 기본으로 삼은 음성을 쓴다 */
+  return vs.find((v) => v.default && /^en-US/i.test(v.lang)) ||
+    vs.find((v) => /^en-US/i.test(v.lang)) || vs[0];
+}
+
+function say(text, voice, isRetry) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.9;
+  if (voice) u.voice = voice;
+
+  /* Google 음성은 네트워크를 타서 오프라인이면 실패한다. 로컬 음성으로 한 번 되살린다.
+     사용자가 다음 카드로 넘겨 끊긴 경우(interrupted/canceled)는 재생하지 않는다. */
+  u.onerror = (e) => {
+    if (isRetry || e.error === "interrupted" || e.error === "canceled") return;
+    const local = pickVoice(true);
+    if (local && local.name !== (voice && voice.name)) say(text, local, true);
+  };
+
+  speechSynthesis.speak(u);
+}
+
 function speak(text) {
   if (!("speechSynthesis" in window)) return;
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    speechSynthesis.speak(u);
+    say(text, pickVoice(false), false);
   } catch (e) { /* 음성 엔진이 없으면 조용히 넘어감 */ }
 }
+
+/* getVoices() 는 처음 호출 때 비어 있고 비동기로 채워진다. 첫 재생부터 제대로 된
+   음성이 잡히도록 로드 시점에 미리 한 번 깨워 둔다. */
+if ("speechSynthesis" in window) speechSynthesis.getVoices();
 
 /* ════ 화면 전환 ════════════════════════════════════════ */
 
@@ -1533,12 +1624,38 @@ function meaningBlock(w) {
 function drawIntro(w) {
   $("#prompt").innerHTML = '<div class="eyebrow">새 단어</div>' +
     '<div class="term">' + esc(w.en) + "</div>" + speakBtn();
-  $("#answer").innerHTML = '<div class="reveal">' + meaningBlock(w) + "</div>";
+  $("#answer").innerHTML = '<div class="reveal">' + meaningBlock(w) + "</div>" +
+    '<input class="spell trace" id="trace" placeholder="따라 써 보세요" ' +
+    'autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" ' +
+    'enterkeyhint="done" />';
   $("#study-foot").innerHTML = '<button class="btn" id="ok">외웠어요</button>';
   bindSpeak(w.en);
-  $("#ok").addEventListener("click", () => {
+
+  const pass = () => {
     grade(w, true);
     advance(true);
+  };
+  $("#ok").addEventListener("click", pass);
+
+  /* 따라 쓰기는 연습이라 채점에 넣지 않는다. 맞게 써 가는 중에는 아무 표시도
+     하지 않고, 철자가 어긋나는 순간에만 빨간불을 켠다 — 매 글자 완전 일치를
+     검사하면 achieve 를 치는 내내 a, ac 에서 빨간불이 뜬다. 커서는 자동으로
+     넣지 않는다(모바일에서 새 단어마다 키보드가 올라온다). */
+  const tr = $("#trace");
+  const target = w.en.trim().toLowerCase();
+
+  tr.addEventListener("input", () => {
+    const typed = tr.value.trim().toLowerCase();
+    tr.classList.remove("right", "wrong");
+    if (!typed) return;
+    if (typed === target) tr.classList.add("right");
+    else if (!target.startsWith(typed)) tr.classList.add("wrong");
+  });
+
+  tr.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    pass();
   });
 }
 
@@ -1718,9 +1835,68 @@ function renderSettings() {
       applyTheme(); save(); renderSettings();
     };
   });
+  renderVoices();
   const loaded = DB.words.some((w) => w.day.startsWith("DAY "));
   $("#builtin-state").textContent = loaded ? "이미 불러왔어요 · DAY 01–15" : "DAY 01–15 · 300개";
   $("#load-builtin").textContent = loaded ? "다시 확인" : "불러오기";
+}
+
+/* ── 발음 음성 고르기 ──────────────────────────────── */
+
+function voiceRow(name, desc, on) {
+  return '<div class="setrow voice-row' + (on ? " on" : "") + '" data-name="' + esc(name) + '">' +
+    '<div><div class="lab"><span class="tick">✓</span>' + esc(name) + "</div>" +
+    '<div class="dsc">' + esc(desc) + "</div></div>" +
+    (name === "auto" ? "" :
+      '<button class="btn quiet vplay" data-play="' + esc(name) + '" aria-label="미리듣기">▶</button>') +
+    "</div>";
+}
+
+function renderVoices() {
+  const box = $("#voice-card");
+  if (!box) return;
+
+  const vs = englishVoices();
+  if (!vs.length) {
+    /* 목록은 비동기로 채워진다. 아직이면 도착했을 때 다시 그린다 */
+    box.innerHTML = '<div class="setrow"><div><div class="lab">음성을 찾는 중…</div>' +
+      '<div class="dsc">이 브라우저에 영어 음성이 없으면 비어 있을 수 있어요</div></div></div>';
+    return;
+  }
+
+  const cur = DB.settings.voice || "auto";
+  const auto = pickVoice(false);
+  box.innerHTML =
+    voiceRow("auto", auto ? "알아서 고르기 · 지금은 " + auto.name : "알아서 고르기", cur === "auto") +
+    vs.map((v) => voiceRow(
+      v.name,
+      v.lang + " · " + (v.localService ? "기기 내장" : "네트워크") + (isNovelty(v) ? " · 장난 음성" : ""),
+      cur === v.name,
+    )).join("");
+
+  $$("#voice-card .voice-row").forEach((row) => {
+    row.addEventListener("click", (e) => {
+      if (e.target.closest(".vplay")) return;
+      DB.settings.voice = row.dataset.name;
+      save();
+      renderVoices();
+    });
+  });
+
+  $$("#voice-card .vplay").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const v = englishVoices().find((x) => x.name === btn.dataset.play);
+      speechSynthesis.cancel();
+      say("achieve", v || null, true);
+    });
+  });
+}
+
+/* 음성 목록은 비동기로 도착한다. 설정 화면을 열어 둔 채 도착하면 다시 그린다 */
+if ("speechSynthesis" in window) {
+  speechSynthesis.addEventListener("voiceschanged", () => {
+    if ($("#s-set") && $("#s-set").classList.contains("on")) renderVoices();
+  });
 }
 
 $("#new-minus").addEventListener("click", () => {
