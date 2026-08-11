@@ -624,6 +624,8 @@
   /* 발음 음성 고르기 */
   .voice-row { cursor: pointer; }
   .voice-row .lab { font-family: var(--en); }
+  /* 음성 이름은 영문이지만 「자동」 행만 한글이라 글꼴을 되돌린다 */
+  .voice-row[data-name="auto"] .lab { font-family: var(--kr); }
   .voice-row .tick { color: var(--amber); visibility: hidden; margin-right: 6px; }
   .voice-row.on .tick { visibility: visible; }
   .voice-row.on .lab { color: var(--amber); }
@@ -1159,28 +1161,53 @@ function pickVoice(localOnly) {
     vs.find((v) => /^en-US/i.test(v.lang)) || vs[0];
 }
 
-function say(text, voice, isRetry) {
+/* 한글 뜻은 영어 음성으로 읽으면 알아들을 수 없다. 한국어 음성을 따로 쓴다 */
+function pickKoVoice() {
+  const vs = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+  return vs.find((v) => v.default) || vs[0] || null;
+}
+
+function utter(text, voice, lang, onerror) {
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
+  u.lang = lang;
   u.rate = 0.9;
   if (voice) u.voice = voice;
-
-  /* Google 음성은 네트워크를 타서 오프라인이면 실패한다. 로컬 음성으로 한 번 되살린다.
-     사용자가 다음 카드로 넘겨 끊긴 경우(interrupted/canceled)는 재생하지 않는다. */
-  u.onerror = (e) => {
-    if (isRetry || e.error === "interrupted" || e.error === "canceled") return;
-    const local = pickVoice(true);
-    if (local && local.name !== (voice && voice.name)) say(text, local, true);
-  };
-
+  if (onerror) u.onerror = onerror;
   speechSynthesis.speak(u);
 }
 
-function speak(text) {
+/* 단어를 두 번 읽고 뜻을 한 번 읽는다. ko 를 넘기지 않으면 단어만 읽는다 —
+   카드 넘기기처럼 뜻을 가려 둔 화면에서 정답을 흘리지 않기 위해서다. */
+function speakSeq(en, ko, localOnly) {
+  const voice = pickVoice(localOnly);
+  let recovering = false;
+
+  /* Google 음성은 네트워크를 타서 오프라인이면 실패한다. 이때는 큐를 비우고
+     로컬 음성으로 처음부터 다시 읽는다 — 실패한 것만 덧붙이면 순서가 엉킨다.
+     사용자가 카드를 넘겨 끊긴 경우(interrupted/canceled)는 다시 읽지 않는다. */
+  const onerr = (e) => {
+    if (localOnly || recovering) return;
+    if (e.error === "interrupted" || e.error === "canceled") return;
+    recovering = true;
+    speechSynthesis.cancel();
+    speakSeq(en, ko, true);
+  };
+
+  utter(en, voice, "en-US", onerr);
+  utter(en, voice, "en-US", onerr);
+
+  if (ko) {
+    const kv = pickKoVoice();
+    /* 한국어 음성이 없는 기기면 뜻은 건너뛴다. 영어 음성으로 읽어 봐야 소음이다 */
+    if (kv) utter(ko.replace(/~/g, " "), kv, kv.lang, null);
+  }
+}
+
+function speak(en, ko) {
   if (!("speechSynthesis" in window)) return;
   try {
     speechSynthesis.cancel();
-    say(text, pickVoice(false), false);
+    speakSeq(en, ko, false);
   } catch (e) { /* 음성 엔진이 없으면 조용히 넘어감 */ }
 }
 
@@ -1596,9 +1623,9 @@ function speakBtn() {
     '<path d="M11 5L6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /></svg></button>';
 }
 
-function bindSpeak(text) {
+function bindSpeak(en, ko) {
   const b = $("#btn-speak");
-  if (b) b.addEventListener("click", () => speak(text));
+  if (b) b.addEventListener("click", () => speak(en, ko));
 }
 
 /* v, n 같은 약어보다 한글이 바로 읽힌다 */
@@ -1629,7 +1656,7 @@ function drawIntro(w) {
     'autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" ' +
     'enterkeyhint="done" />';
   $("#study-foot").innerHTML = '<button class="btn" id="ok">외웠어요</button>';
-  bindSpeak(w.en);
+  bindSpeak(w.en, w.ko);
 
   const pass = () => {
     grade(w, true);
@@ -1644,18 +1671,29 @@ function drawIntro(w) {
   const tr = $("#trace");
   const target = w.en.trim().toLowerCase();
 
+  /* 안 쓰고 넘어가는 건 되지만, 써 놓고 틀린 채로는 못 넘어간다. 쓰는 도중
+     (achie 처럼 아직 덜 쓴 상태)도 아직 맞은 게 아니라 잠가 둔다. */
+  const sync = () => {
+    const typed = tr.value.trim().toLowerCase();
+    const blocked = typed !== "" && typed !== target;
+    $("#ok").disabled = blocked;
+    return !blocked;
+  };
+
   tr.addEventListener("input", () => {
     const typed = tr.value.trim().toLowerCase();
     tr.classList.remove("right", "wrong");
-    if (!typed) return;
-    if (typed === target) tr.classList.add("right");
-    else if (!target.startsWith(typed)) tr.classList.add("wrong");
+    if (typed) {
+      if (typed === target) tr.classList.add("right");
+      else if (!target.startsWith(typed)) tr.classList.add("wrong");
+    }
+    sync();
   });
 
   tr.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
     e.preventDefault();
-    pass();
+    if (sync()) pass();
   });
 }
 
@@ -1752,7 +1790,7 @@ function showVerdict(ok, w) {
   extra.style.marginTop = "14px";
   extra.innerHTML = meaningBlock(w) + speakBtn();
   $("#answer").appendChild(extra);
-  bindSpeak(w.en);
+  bindSpeak(w.en, w.ko);
 
   $("#study-foot").innerHTML = '<button class="btn" id="next">다음</button>';
   $("#next").addEventListener("click", () => advance(ok));
@@ -1843,9 +1881,9 @@ function renderSettings() {
 
 /* ── 발음 음성 고르기 ──────────────────────────────── */
 
-function voiceRow(name, desc, on) {
+function voiceRow(name, label, desc, on) {
   return '<div class="setrow voice-row' + (on ? " on" : "") + '" data-name="' + esc(name) + '">' +
-    '<div><div class="lab"><span class="tick">✓</span>' + esc(name) + "</div>" +
+    '<div><div class="lab"><span class="tick">✓</span>' + esc(label) + "</div>" +
     '<div class="dsc">' + esc(desc) + "</div></div>" +
     (name === "auto" ? "" :
       '<button class="btn quiet vplay" data-play="' + esc(name) + '" aria-label="미리듣기">▶</button>') +
@@ -1867,8 +1905,10 @@ function renderVoices() {
   const cur = DB.settings.voice || "auto";
   const auto = pickVoice(false);
   box.innerHTML =
-    voiceRow("auto", auto ? "알아서 고르기 · 지금은 " + auto.name : "알아서 고르기", cur === "auto") +
+    voiceRow("auto", "자동",
+      auto ? "알아서 고르기 · 지금은 " + auto.name : "알아서 고르기", cur === "auto") +
     vs.map((v) => voiceRow(
+      v.name,
       v.name,
       v.lang + " · " + (v.localService ? "기기 내장" : "네트워크") + (isNovelty(v) ? " · 장난 음성" : ""),
       cur === v.name,
@@ -1887,7 +1927,7 @@ function renderVoices() {
     btn.addEventListener("click", () => {
       const v = englishVoices().find((x) => x.name === btn.dataset.play);
       speechSynthesis.cancel();
-      say("achieve", v || null, true);
+      utter("achieve", v || null, "en-US", null);
     });
   });
 }
