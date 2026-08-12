@@ -851,6 +851,7 @@
       </div>
 
       <button class="btn" id="go-study">학습 시작</button>
+      <button class="btn ghost" id="go-review" style="margin-top:8px;display:none"></button>
 
       <div class="card" style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">
@@ -1057,6 +1058,7 @@ function load() {
       DB.meta = Object.assign(DEFAULTS().meta, parsed.meta || {});
       DB.words = Array.isArray(parsed.words) ? parsed.words : [];
       backfillIpa();
+      backfillLast();
     }
   } catch (e) {
     storageOK = false;
@@ -1086,6 +1088,21 @@ function backfillIpa() {
     if (!hit) return;
     if (!w.ipa && hit.ipa) { w.ipa = hit.ipa; filled++; }
     if (!w.kr && hit.kr) { w.kr = hit.kr; filled++; }
+  });
+  if (filled) save();
+}
+
+/* last(마지막 채점 시각)도 나중에 생긴 필드다. 이미 공부한 단어에는 없어서
+   「오늘 본 단어 다시 보기」가 오늘 것을 하나도 못 찾는다.
+   grade() 가 due 를 now() + STEPS[box] 일 로 잡으므로 거꾸로 빼면 그 시각이
+   그대로 나온다. 진도를 초기화한 단어(due 0)는 건드리지 않는다. */
+function backfillLast() {
+  let filled = 0;
+  DB.words.forEach((w) => {
+    if (w.last || w.seen === 0 || !w.due) return;
+    const step = STEPS[w.box] === undefined ? 0 : STEPS[w.box];
+    w.last = w.due - step * DAY_MS;
+    filled++;
   });
   if (filled) save();
 }
@@ -1136,15 +1153,18 @@ function newWord(en, pos, ko, ex, exKo, day, ipa, kr) {
     seen: 0,
     right: 0,
     wrong: 0,
+    /* 마지막으로 채점한 시각. 「오늘 본 단어 다시 보기」가 이걸로 오늘 것을 고른다 */
+    last: 0,
     added: now(),
   };
 }
 
 function grade(w, ok) {
-  /* 시험은 실력을 확인만 한다 — 시험 화면에 적어 둔 약속이다. 채점 경로가
-     네 군데(소개·카드·4지선다·스펠링)라 길목인 여기서 한 번에 막는다.
+  /* 시험과 다시 보기는 실력을 확인만 한다 — 시험 화면에 적어 둔 약속이고,
+     다시 보기는 이미 오늘 채점한 것을 또 세면 진도가 두 번 움직인다.
+     채점 경로가 네 군데(소개·카드·4지선다·스펠링)라 길목인 여기서 막는다.
      틀린 단어를 세션 안에서 다시 만나는 것은 advance() 가 따로 처리한다 */
-  if (S.mode === "exam") return;
+  if (S.mode !== "study") return;
 
   if (w.seen === 0) bumpNewToday();
   w.seen++;
@@ -1156,6 +1176,7 @@ function grade(w, ok) {
     w.box = Math.max(0, w.box - 2);
   }
   w.due = now() + STEPS[w.box] * DAY_MS;
+  w.last = now();
 }
 
 const isNew = (w) => w.seen === 0;
@@ -1187,6 +1208,13 @@ function buildStudySession() {
   const due = shuffle(dueWords());
   const fresh = newWords().slice(0, newRoom());
   return shuffle(due.concat(fresh));
+}
+
+/* 오늘 채점한 단어. 학습을 끝내면 그날 본 것들은 복습일이 내일 이후로 밀려
+   오늘 화면에서 사라진다 — 다시 훑어볼 길을 여기서 만든다 */
+function studiedToday() {
+  const t = todayKey();
+  return DB.words.filter((w) => w.last && new Date(w.last).toISOString().slice(0, 10) === t);
 }
 
 /* ════ 도구 ════════════════════════════════════════════ */
@@ -1369,6 +1397,13 @@ function renderToday() {
      4 주 내내 0 에 붙어 있어 오늘 공부한 것이 아무 데도 드러나지 않는다 */
   $("#prog-label").textContent = started + " / " + total;
   $("#prog-bar").style.width = (total ? (started / total) * 100 : 0) + "%";
+
+  /* 오늘 본 단어는 복습일이 내일 이후로 밀려 오늘 화면에서 사라진다.
+     다시 훑어볼 길을 남겨 둔다 — 채점하지 않으니 진도는 그대로다 */
+  const back = studiedToday().length;
+  const rev = $("#go-review");
+  rev.style.display = back ? "" : "none";
+  rev.textContent = "오늘 본 단어 다시 보기 · " + back + "개";
 
   const s = DB.meta.streak || 0;
   $("#streak-line").textContent = s > 0
@@ -1676,6 +1711,19 @@ function startExam() {
   openStudy();
 }
 
+/* 오늘 본 것을 그대로 다시 넘겨 본다. 채점하지 않으므로 몇 번을 돌려도
+   진도가 움직이지 않는다 — grade() 가 study 모드에서만 동작한다 */
+function startReview() {
+  const pool = shuffle(studiedToday());
+  if (!pool.length) return;
+  S.queue = pool.map((w) => w.id);
+  S.mode = "review";
+  S.done = 0;
+  S.total = pool.length;
+  S.wrongIds = [];
+  openStudy();
+}
+
 function openStudy() {
   $("#study").classList.add("on");
   document.body.style.overflow = "hidden";
@@ -1692,11 +1740,15 @@ function closeStudy() {
 $("#study-close").addEventListener("click", closeStudy);
 $("#go-study").addEventListener("click", startStudy);
 $("#go-exam").addEventListener("click", startExam);
+$("#go-review").addEventListener("click", startReview);
 
 function wordById(id) { return DB.words.find((w) => w.id === id); }
 
 function pickType(w) {
   if (S.mode === "exam") return examType;
+  /* 다시 보기는 소개 카드로 준다. 뜻·예문·발음이 한 화면에 다 나오고
+     따라 쓰는 칸도 있어 훑어보기에 맞는다 */
+  if (S.mode === "review") return "intro";
   if (isNew(w)) return "intro";
   if (w.box <= 2) return "choice";
   return "spell";
@@ -1764,13 +1816,16 @@ function meaningBlock(w) {
 /* ── 새 단어 소개 ──────────────────────────────────── */
 
 function drawIntro(w) {
-  $("#prompt").innerHTML = '<div class="eyebrow">새 단어</div>' +
+  /* 같은 카드를 다시 보기에서도 쓴다. 처음 만나는 단어가 아니므로 머리말과
+     넘기는 버튼의 말을 바꾼다 */
+  const review = S.mode === "review";
+  $("#prompt").innerHTML = '<div class="eyebrow">' + (review ? "다시 보기" : "새 단어") + "</div>" +
     '<div class="term">' + esc(w.en) + "</div>" + sayRow(w);
   $("#answer").innerHTML = '<div class="reveal">' + meaningBlock(w) + "</div>" +
     '<input class="spell trace" id="trace" placeholder="따라 써 보세요" ' +
     'autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" ' +
     'enterkeyhint="done" />';
-  $("#study-foot").innerHTML = '<button class="btn" id="ok">외웠어요</button>';
+  $("#study-foot").innerHTML = '<button class="btn" id="ok">' + (review ? "다음" : "외웠어요") + "</button>";
   bindSpeak(w.en, w.ko);
 
   const pass = () => {
@@ -1958,15 +2013,20 @@ function finish() {
   const wrong = S.wrongIds.length;
   const acc = S.total ? Math.round(((S.total - wrong) / S.total) * 100) : 100;
 
-  $("#prompt").innerHTML = '<div class="eyebrow">' +
-    (S.mode === "exam" ? "시험 끝" : "오늘 학습 끝") + "</div>" +
+  const label = S.mode === "exam" ? "시험 끝"
+    : S.mode === "review" ? "다시 보기 끝"
+    : "오늘 학습 끝";
+  $("#prompt").innerHTML = '<div class="eyebrow">' + label + "</div>" +
     '<div class="kterm" style="margin-top:8px">' + S.total + "개를 봤어요</div>";
 
+  /* 다시 보기는 채점하지 않으므로 정답률도 「곧 다시 만나게 됩니다」도 뜻이 없다 */
   $("#answer").innerHTML = '<div class="reveal" style="border:none">' +
-    '<div class="mean">한 번에 맞힌 비율 ' + acc + "%</div>" +
-    (wrong
-      ? '<div class="exk" style="margin-top:8px">' + wrong + "개는 헷갈렸어요. 곧 다시 만나게 됩니다.</div>"
-      : '<div class="exk" style="margin-top:8px">하나도 안 틀렸어요.</div>') +
+    (S.mode === "review"
+      ? '<div class="exk">진도는 그대로예요. 몇 번을 봐도 괜찮습니다.</div>'
+      : '<div class="mean">한 번에 맞힌 비율 ' + acc + "%</div>" +
+        (wrong
+          ? '<div class="exk" style="margin-top:8px">' + wrong + "개는 헷갈렸어요. 곧 다시 만나게 됩니다.</div>"
+          : '<div class="exk" style="margin-top:8px">하나도 안 틀렸어요.</div>')) +
     "</div>";
 
   $("#verdict").textContent = "";
