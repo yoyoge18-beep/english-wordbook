@@ -1024,7 +1024,7 @@ let storageOK = true;
 const DEFAULTS = () => ({
   words: [],
   settings: { dailyNew: 20, theme: "auto", voice: "auto" },
-  meta: { streak: 0, lastDay: null, builtinLoaded: false },
+  meta: { streak: 0, lastDay: null, builtinLoaded: false, newDay: null, newCount: 0 },
 });
 
 let DB = DEFAULTS();
@@ -1115,6 +1115,7 @@ function newWord(en, pos, ko, ex, exKo, day, ipa, kr) {
 }
 
 function grade(w, ok) {
+  if (w.seen === 0) bumpNewToday();
   w.seen++;
   if (ok) {
     w.right++;
@@ -1133,9 +1134,27 @@ const isMastered = (w) => w.box >= MASTER_BOX;
 function dueWords() { return DB.words.filter(isDue); }
 function newWords() { return DB.words.filter(isNew); }
 
+/* 오늘 새로 시작한 단어 수. streak 의 lastDay 는 세션을 끝내야 갱신되므로
+   날짜 도장을 따로 찍는다 */
+function newToday() {
+  return DB.meta.newDay === todayKey() ? (DB.meta.newCount || 0) : 0;
+}
+
+function bumpNewToday() {
+  const t = todayKey();
+  if (DB.meta.newDay !== t) { DB.meta.newDay = t; DB.meta.newCount = 0; }
+  DB.meta.newCount++;
+}
+
+/* 「하루 새 단어」는 한 번에 몇 개를 주느냐가 아니라 하루에 몇 개를 시작하느냐다.
+   남은 몫만 내주지 않으면 20개를 끝내도 곧바로 새 20개가 나와 끝이 없다 */
+function newRoom() {
+  return Math.max(0, DB.settings.dailyNew - newToday());
+}
+
 function buildStudySession() {
   const due = shuffle(dueWords());
-  const fresh = newWords().slice(0, DB.settings.dailyNew);
+  const fresh = newWords().slice(0, newRoom());
   return shuffle(due.concat(fresh));
 }
 
@@ -1295,8 +1314,9 @@ function renderToday() {
   renderStorageWarning();
   const total = DB.words.length;
   const due = dueWords().length;
-  const fresh = Math.min(newWords().length, DB.settings.dailyNew);
+  const fresh = Math.min(newWords().length, newRoom());
   const mastered = DB.words.filter(isMastered).length;
+  const started = DB.words.filter((w) => w.seen > 0).length;
 
   $("#t-due").textContent = due;
   $("#t-new").textContent = fresh;
@@ -1313,8 +1333,11 @@ function renderToday() {
   btn.disabled = todo === 0;
   btn.textContent = todo === 0 ? (total === 0 ? "단어를 먼저 넣어 주세요" : "오늘 학습 완료") : "학습 시작 · " + todo + "개";
 
-  $("#prog-label").textContent = mastered + " / " + total;
-  $("#prog-bar").style.width = (total ? (mastered / total) * 100 : 0) + "%";
+  /* 진행 막대는 「외운 단어」가 아니라 「한 번이라도 시작한 단어」를 센다.
+     외움은 box 5 라 STEPS 상 최소 27 일이 걸린다 — 그것으로 막대를 그리면
+     4 주 내내 0 에 붙어 있어 오늘 공부한 것이 아무 데도 드러나지 않는다 */
+  $("#prog-label").textContent = started + " / " + total;
+  $("#prog-bar").style.width = (total ? (started / total) * 100 : 0) + "%";
 
   const s = DB.meta.streak || 0;
   $("#streak-line").textContent = s > 0
