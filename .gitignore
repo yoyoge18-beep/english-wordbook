@@ -1,5 +1,9 @@
 # Claude Code 로컬 전용 권한 설정 (기기마다 다름)
 .claude/settings.local.json
 
+# Claude Code 런타임 상태 (세션 락, 변경 로그 — 기기별 임시 데이터)
+.claude/sessions/
+.claude/state/
+
 # macOS
 .DS_Store
