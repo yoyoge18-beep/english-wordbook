@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="단어장" />
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABnElEQVR42u3dsQ2AIBBAUYZwACdwASZmNBtjwQB0RqKETiW+5A/A3b2eMM2LdFuwAsEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEhwSH4BAcgkNwCA7BITgEh+CQ4BAcgkNwCA7BITgEh+AQHIJDgkNwCA7BITgEh+AQHIJDcEhwCA7BITgEh+AQHILj0rrlQfvORHDAAQcccMABBxxwwAEHHHDAAQcccMABBxxwwAEHHHDAAQccdXuKR+PiOE/x7kStl7SCAw444IADDjjggAMOOOCAAw444IADDjjggAMOOOCAAw44/oRDzweH4BAcgkNwuBAccMABBxxwwAEHHHDAAYfgEByCQ3AIDjjggAMOOOCAAw444IBDcAgOwSE4BAcccMABBxxwwAGH78oFh+AQHIJDcAgOwSE4BIcEh+AQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3DYguAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ4JDnQogHbnfOQALCgAAAABJRU5ErkJggg==" />
+<link rel="manifest" href="manifest.webmanifest" />
 <title>나만의 단어장</title>
 <style>
   :root {
@@ -2230,6 +2231,29 @@ $("#do-reset").addEventListener("click", () => {
 load();
 applyTheme();
 go("today");
+</script>
+
+<script>
+/* ════ 오프라인 지원 ══════════════════════════════════
+   서비스워커는 https나 localhost에서만 동작한다.
+   파일을 직접 열어본 경우(file://)는 조용히 건너뛴다. */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {
+      /* 등록에 실패해도 앱 자체는 멀쩡히 돌아가야 한다 */
+    });
+  });
+
+  /* 새 버전이 자리를 넘겨받으면 한 번만 새로고침한다.
+     첫 설치 때는 원래 주인이 없었으므로 새로고침하지 않는다. */
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloading) return;
+    reloading = true;
+    location.reload();
+  });
+}
 </script>
 </body>
 </html>
