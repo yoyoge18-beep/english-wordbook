@@ -5,7 +5,7 @@
  *
  * 앱을 고쳐서 새로 올릴 때는 VERSION을 올린다. 그래야 예전 캐시가 지워진다.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `wordbook-${VERSION}`;
 
 /* 이게 있어야 비행기 모드에서도 앱이 열린다 */
